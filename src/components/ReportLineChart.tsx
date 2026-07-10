@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { CSSProperties } from "react";
 
 type ChartItem = {
@@ -29,6 +29,7 @@ const PLOT_BOTTOM = 96;
 
 export function ReportLineChart({ data }: { data: ChartItem[] }) {
   const [active, setActive] = useState<ActivePoint | null>(null);
+  const clipId = `report-chart-${useId().replace(/:/g, "")}`;
   const scale = buildScale(data);
   const created = buildChartCoordinates(data, "created", scale.max);
   const completed = buildChartCoordinates(data, "completed", scale.max);
@@ -64,12 +65,19 @@ export function ReportLineChart({ data }: { data: ChartItem[] }) {
 
         <div className="report-chart-plot" style={{ "--chart-count": chartCount } as CSSProperties}>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            {scale.ticks.map((tick) => (
-              <line className="report-chart-grid" key={tick.value} x1="0" x2="100" y1={tick.y} y2={tick.y} vectorEffect="non-scaling-stroke" />
-            ))}
-            <path className="report-line-created" d={pointsToSmoothPath(created)} fill="none" vectorEffect="non-scaling-stroke" />
-            <path className="report-line-completed" d={pointsToSmoothPath(completed)} fill="none" vectorEffect="non-scaling-stroke" />
-            <path className="report-line-overdue" d={pointsToSmoothPath(overdue)} fill="none" vectorEffect="non-scaling-stroke" />
+            <defs>
+              <clipPath id={clipId}>
+                <rect x="0" y={PLOT_TOP} width="100" height={PLOT_BOTTOM - PLOT_TOP} />
+              </clipPath>
+            </defs>
+            <g clipPath={`url(#${clipId})`}>
+              {scale.ticks.map((tick) => (
+                <line className="report-chart-grid" key={tick.value} x1="0" x2="100" y1={tick.y} y2={tick.y} vectorEffect="non-scaling-stroke" />
+              ))}
+              <path className="report-line-created" d={pointsToMonotonePath(created)} fill="none" vectorEffect="non-scaling-stroke" />
+              <path className="report-line-completed" d={pointsToMonotonePath(completed)} fill="none" vectorEffect="non-scaling-stroke" />
+              <path className="report-line-overdue" d={pointsToMonotonePath(overdue)} fill="none" vectorEffect="non-scaling-stroke" />
+            </g>
           </svg>
 
           {[
@@ -159,21 +167,39 @@ function round(value: number) {
   return Math.round(value * 100) / 100;
 }
 
-function pointsToSmoothPath(points: ChartPoint[]) {
+function pointsToMonotonePath(points: ChartPoint[]) {
   if (!points.length) return "";
   if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
 
-  return points.reduce((path, point, index) => {
-    if (index === 0) return `M ${point.x} ${point.y}`;
+  const widths = points.slice(1).map((point, index) => point.x - points[index].x);
+  const slopes = points.slice(1).map((point, index) => (point.y - points[index].y) / widths[index]);
+  const tangents = points.map((_, index) => {
+    if (index === 0) return slopes[0];
+    if (index === points.length - 1) return slopes[slopes.length - 1];
 
-    const previous = points[index - 1];
-    const beforePrevious = points[index - 2] ?? previous;
-    const next = points[index + 1] ?? point;
-    const controlStartX = previous.x + (point.x - beforePrevious.x) / 6;
-    const controlStartY = previous.y + (point.y - beforePrevious.y) / 6;
-    const controlEndX = point.x - (next.x - previous.x) / 6;
-    const controlEndY = point.y - (next.y - previous.y) / 6;
+    const previous = slopes[index - 1];
+    const next = slopes[index];
+    if (previous === 0 || next === 0 || previous * next < 0) return 0;
 
-    return `${path} C ${round(controlStartX)} ${round(controlStartY)}, ${round(controlEndX)} ${round(controlEndY)}, ${point.x} ${point.y}`;
-  }, "");
+    const previousWidth = widths[index - 1];
+    const nextWidth = widths[index];
+    const firstWeight = 2 * nextWidth + previousWidth;
+    const secondWeight = nextWidth + 2 * previousWidth;
+    return (firstWeight + secondWeight) / (firstWeight / previous + secondWeight / next);
+  });
+
+  return points.slice(1).reduce((path, point, index) => {
+    const previous = points[index];
+    const width = widths[index];
+    const segmentMin = Math.min(previous.y, point.y);
+    const segmentMax = Math.max(previous.y, point.y);
+    const controlStartY = clamp(previous.y + (tangents[index] * width) / 3, segmentMin, segmentMax);
+    const controlEndY = clamp(point.y - (tangents[index + 1] * width) / 3, segmentMin, segmentMax);
+
+    return `${path} C ${round(previous.x + width / 3)} ${round(controlStartY)}, ${round(point.x - width / 3)} ${round(controlEndY)}, ${point.x} ${point.y}`;
+  }, `M ${points[0].x} ${points[0].y}`);
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
 }

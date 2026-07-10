@@ -3,6 +3,7 @@
 import { Archive, Building2, Calendar, CheckSquare, Columns3, Download, Expand, Flag, ListChecks, Minimize2, MessageSquare, Monitor, Paperclip, Plus, Save, Search, Send, Trash2, UploadCloud, UserRound, X } from "lucide-react";
 import { type DragEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { CreateTaskPawButton } from "@/components/CreateTaskPawButton";
 
 const priorityLabels = {
   LOW: "Низкий",
@@ -421,10 +422,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
             <button className={viewMode === "mine" ? "active" : ""} type="button" onClick={() => setViewMode("mine")}>Моя работа</button>
           </div>
           {view.permissions.canCreateTask ? (
-            <button className="button create-task-button" type="button" onClick={openCreateTask}>
-              <Plus size={17} />
-              Создать
-            </button>
+            <CreateTaskPawButton onClick={openCreateTask} />
           ) : null}
           {view.permissions.canCreateTask ? (
             <form className="toolbar quick-create" action={createTask}>

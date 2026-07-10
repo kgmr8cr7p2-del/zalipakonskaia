@@ -227,6 +227,29 @@
     }
   }
 
+  @keyframes cat-paw-search {
+    0%, 58%, 100% {
+      opacity: 0;
+      transform: translate3d(-50%, -66px, 0) rotate(0deg);
+    }
+    66% {
+      opacity: 1;
+      transform: translate3d(calc(-50% - 8px), -18px, 0) rotate(-9deg);
+    }
+    73% {
+      opacity: 1;
+      transform: translate3d(calc(-50% + 9px), -9px, 0) rotate(11deg);
+    }
+    80% {
+      opacity: 1;
+      transform: translate3d(calc(-50% - 4px), -15px, 0) rotate(-5deg);
+    }
+    88% {
+      opacity: 0;
+      transform: translate3d(-50%, -52px, 0) rotate(0deg);
+    }
+  }
+
   .auth-page {
     display: grid;
     min-block-size: 100dvh;
@@ -336,26 +359,72 @@
     box-shadow: none;
   }
 
-  .create-task-button {
+  .create-task-paw-zone {
+    --paw-angle: 0deg;
+    --paw-reach: 0px;
+    --paw-shift: 0px;
     position: relative;
+    isolation: isolate;
     overflow: visible;
   }
 
-  .create-task-button::after {
-    content: "🐾";
-    position: absolute;
-    inset-block-start: -1.45rem;
-    inset-inline-end: -.45rem;
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(12px, 10px) rotate(18deg) scale(.76);
-    transition: opacity 160ms ease, transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  .create-task-paw-zone .create-task-button {
+    position: relative;
+    z-index: 2;
   }
 
-  .create-task-button:hover::after,
-  .create-task-button:focus-visible::after {
+  .cat-paw {
+    position: absolute;
+    z-index: 1;
+    inset-inline-start: 50%;
+    inset-block-end: .35rem;
+    inline-size: 3.35rem;
+    block-size: 6.1rem;
+    color: #7d8796;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(-50%, -66px, 0) rotate(0deg);
+    transform-origin: 50% 0;
+    animation: cat-paw-search 4.8s cubic-bezier(.22, .8, .25, 1) infinite 1.4s;
+    will-change: transform, opacity;
+  }
+
+  .cat-paw svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 5px 4px rgb(15 23 42 / 18%));
+  }
+
+  .cat-paw-leg,
+  .cat-paw-foot {
+    fill: currentColor;
+  }
+
+  .cat-paw-stripe {
+    fill: none;
+    stroke: #5b6472;
+    stroke-linecap: round;
+    stroke-width: 5;
+    opacity: .7;
+  }
+
+  .cat-paw-pad {
+    fill: #eaa8ad;
+    stroke: #fff;
+    stroke-width: 1.4;
+  }
+
+  .create-task-paw-zone[data-tracking="true"] .cat-paw {
+    animation: none;
     opacity: 1;
-    transform: translate(0, 0) rotate(-10deg) scale(1);
+    transform: translate3d(calc(-50% + var(--paw-shift)), calc(-28px + var(--paw-reach)), 0) rotate(var(--paw-angle));
+    transition: opacity 120ms ease-out, transform 180ms cubic-bezier(.18, .8, .22, 1.16);
+  }
+
+  .create-task-paw-zone:focus-within .cat-paw {
+    opacity: 1;
   }
 
   .button.secondary {
@@ -3278,12 +3347,6 @@
     gap: .75rem;
   }
 
-  .settings-column-row {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-    align-items: center;
-  }
-
   .settings-block {
     display: grid;
     gap: .75rem;
@@ -3298,6 +3361,303 @@
     border-color: color-mix(in srgb, var(--brand) 18%, var(--border));
     box-shadow: none;
     transform: none;
+  }
+
+  .settings-page {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    max-inline-size: 1500px;
+    margin-inline: auto;
+  }
+
+  .settings-page-head {
+    display: grid;
+    gap: .34rem;
+    border-block-end: 1px solid var(--border);
+    padding-block: .2rem 1rem;
+  }
+
+  .settings-page-head h1 {
+    font-size: clamp(1.55rem, 2.2vw, 2.15rem);
+    line-height: 1.1;
+  }
+
+  .settings-page-head > p {
+    max-inline-size: 48rem;
+    color: var(--muted);
+  }
+
+  .settings-page-kicker {
+    display: inline-flex;
+    inline-size: fit-content;
+    align-items: center;
+    gap: .4rem;
+    color: var(--brand);
+    font-size: .76rem;
+    font-weight: 850;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .settings-managers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 34rem), 1fr));
+    align-items: start;
+    gap: 1rem;
+  }
+
+  .settings-manager {
+    gap: 0;
+    min-inline-size: 0;
+    overflow: clip;
+    padding: 0;
+  }
+
+  .settings-manager-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem;
+  }
+
+  .settings-manager-head h2 {
+    font-size: 1.05rem;
+  }
+
+  .settings-manager-head p {
+    margin-block-start: .12rem;
+    color: var(--muted);
+    font-size: .82rem;
+  }
+
+  .settings-manager-icon {
+    display: grid;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    place-items: center;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--brand) 10%, var(--panel));
+    color: var(--brand);
+  }
+
+  .settings-manager-icon-oil {
+    background: color-mix(in srgb, var(--warning) 12%, var(--panel));
+    color: var(--warning);
+  }
+
+  .settings-summary-badge {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--panel-2);
+    color: var(--muted);
+    padding: .28rem .55rem;
+    font-size: .72rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .settings-add-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: .65rem;
+    border-block: 1px solid var(--border);
+    background: color-mix(in srgb, var(--brand) 3%, var(--panel));
+    padding: .85rem 1rem;
+  }
+
+  .settings-add-form .field {
+    gap: .28rem;
+  }
+
+  .settings-add-form .field > span {
+    color: var(--muted);
+    font-size: .75rem;
+    font-weight: 800;
+  }
+
+  .settings-error {
+    margin: .75rem 1rem 0;
+    border: 1px solid color-mix(in srgb, var(--danger) 28%, var(--border));
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--danger) 7%, var(--panel));
+    color: var(--danger);
+    padding: .55rem .65rem;
+    font-size: .8rem;
+    font-weight: 750;
+  }
+
+  .settings-list {
+    display: grid;
+    gap: .5rem;
+    padding: .75rem;
+  }
+
+  .settings-row {
+    display: grid;
+    align-items: center;
+    gap: .55rem;
+    min-inline-size: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+    padding: .55rem;
+    transition: border-color 160ms ease, background-color 160ms ease;
+  }
+
+  .settings-row:hover,
+  .settings-row:focus-within {
+    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+    background: color-mix(in srgb, var(--brand) 2.5%, var(--panel));
+  }
+
+  .settings-column-row {
+    grid-template-columns: 2rem minmax(10rem, 1fr) auto minmax(6.2rem, auto) auto;
+  }
+
+  .settings-position {
+    display: grid;
+    inline-size: 2rem;
+    block-size: 2rem;
+    place-items: center;
+    border-radius: 6px;
+    background: var(--panel-2);
+    color: var(--muted);
+    font-size: .76rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .settings-name-field {
+    min-inline-size: 0;
+  }
+
+  .settings-name-field .input {
+    min-block-size: 2.35rem;
+    font-weight: 750;
+  }
+
+  .settings-item-meta {
+    display: grid;
+    min-inline-size: 3rem;
+    color: var(--muted);
+    font-size: .68rem;
+    line-height: 1.05;
+    text-align: center;
+  }
+
+  .settings-item-meta strong {
+    color: var(--text);
+    font-size: .92rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .settings-save-state {
+    display: inline-flex;
+    min-inline-size: 6.2rem;
+    align-items: center;
+    gap: .25rem;
+    color: var(--success);
+    font-size: .7rem;
+    font-weight: 800;
+  }
+
+  .settings-row-actions {
+    display: inline-flex;
+    gap: .3rem;
+  }
+
+  .settings-row-actions .button.icon,
+  .settings-row > .button.icon {
+    inline-size: 2.25rem;
+    min-block-size: 2.25rem;
+  }
+
+  .oil-depot-row {
+    grid-template-columns: .55rem minmax(10rem, 1fr) auto auto minmax(6.2rem, auto) auto;
+  }
+
+  .oil-depot-status-mark {
+    inline-size: .5rem;
+    block-size: 2rem;
+    border-radius: 999px;
+    background: var(--success);
+  }
+
+  .oil-depot-row.is-paused .oil-depot-status-mark {
+    background: var(--muted);
+    opacity: .45;
+  }
+
+  .settings-switch {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: .4rem;
+    cursor: pointer;
+  }
+
+  .settings-switch input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+  }
+
+  .settings-switch > span {
+    position: relative;
+    inline-size: 2.3rem;
+    block-size: 1.3rem;
+    border-radius: 999px;
+    background: var(--border);
+    transition: background-color 160ms ease;
+  }
+
+  .settings-switch > span::after {
+    content: "";
+    position: absolute;
+    inset-block-start: .18rem;
+    inset-inline-start: .18rem;
+    inline-size: .94rem;
+    block-size: .94rem;
+    border-radius: 999px;
+    background: white;
+    box-shadow: 0 1px 3px rgb(15 23 42 / 25%);
+    transition: translate 180ms cubic-bezier(.2, .8, .2, 1);
+    translate: 0;
+  }
+
+  .settings-switch input:checked + span {
+    background: var(--success);
+  }
+
+  .settings-switch input:checked + span::after {
+    translate: 1rem 0;
+  }
+
+  .settings-switch input:focus-visible + span {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  .settings-switch b {
+    min-inline-size: 3.25rem;
+    color: var(--muted);
+    font-size: .72rem;
+  }
+
+  .settings-manager-note {
+    border-block-start: 1px solid var(--border);
+    color: var(--muted);
+    padding: .7rem 1rem;
+    font-size: .74rem;
+  }
+
+  .settings-utilities {
+    display: grid;
+    gap: 1rem;
   }
 
   .goida-test-panel {
@@ -3315,37 +3675,6 @@
     white-space: nowrap;
   }
 
-  .oil-depot-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    align-items: center;
-    gap: .5rem;
-    transition: transform 160ms ease;
-  }
-
-  .oil-depot-row:hover {
-    transform: translateX(2px);
-  }
-
-  .toggle-row {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    color: var(--muted);
-    font-size: .84rem;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
-  .column-order-actions {
-    display: inline-flex;
-    gap: .25rem;
-  }
-
-  .column-order-actions .button.icon {
-    inline-size: 2rem;
-    min-block-size: 2rem;
-  }
 
   .panel {
     border: 1px solid var(--border);
@@ -3574,6 +3903,21 @@
     font-size: .72rem;
     font-weight: 850;
     text-transform: uppercase;
+  }
+
+  .tv-joke-card .tv-joke-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .3rem .6rem;
+  }
+
+  .tv-joke-label a {
+    color: #2563eb;
+    font-size: .68rem;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .tv-joke-card strong {
@@ -4074,21 +4418,58 @@
       inline-size: 100%;
     }
 
-    .settings-column-row {
-      grid-template-columns: auto 1fr auto;
-    }
-
     .goida-test-panel {
       grid-template-columns: 1fr;
     }
 
-    .oil-depot-row {
+    .settings-manager-head {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .settings-summary-badge {
+      grid-column: 2;
+      justify-self: start;
+    }
+
+    .settings-add-form {
       grid-template-columns: 1fr;
     }
 
-    .settings-column-row .input {
-      grid-column: 1 / -1;
-      order: -1;
+    .settings-add-form .button {
+      inline-size: 100%;
+    }
+
+    .settings-column-row {
+      grid-template-columns: 2rem minmax(0, 1fr) auto;
+    }
+
+    .settings-column-row .settings-save-state {
+      grid-column: 2;
+    }
+
+    .settings-column-row .settings-row-actions {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+      flex-direction: column;
+    }
+
+    .oil-depot-row {
+      grid-template-columns: .55rem minmax(0, 1fr) auto;
+    }
+
+    .oil-depot-row .settings-name-field {
+      grid-column: 2 / -1;
+    }
+
+    .oil-depot-row .settings-item-meta,
+    .oil-depot-row .settings-save-state {
+      grid-column: 2;
+      justify-self: start;
+    }
+
+    .oil-depot-row .settings-switch,
+    .oil-depot-row > .button.icon {
+      grid-column: 3;
     }
 
     .topbar {

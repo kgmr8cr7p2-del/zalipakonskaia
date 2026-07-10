@@ -11,10 +11,17 @@ export default async function SettingsPage() {
 
   return (
     <AppShell user={user}>
-      <div className="content">
-        <section className="panel">
+      <div className="content settings-page">
+        <header className="settings-page-head">
+          <span className="settings-page-kicker"><Settings2 size={17} /> Управление структурой</span>
           <h1>Настройки доски</h1>
-          <p className="muted">Администратор может добавлять, переименовывать и удалять пустые колонки.</p>
+          <p>Колонки определяют рабочий процесс, а нефтебазы помогают связывать задачи с объектами.</p>
+        </header>
+        <div className="settings-managers">
+          <BoardSettings columns={JSON.parse(JSON.stringify(view?.board.columns ?? []))} canManage={user.role.name === "ADMIN"} />
+          <OilDepotSettings oilDepots={JSON.parse(JSON.stringify(view?.oilDepots ?? []))} canManage={user.role.name === "ADMIN"} />
+        </div>
+        <section className="settings-utilities">
           {user.email.toLowerCase() === "les_victor@mail.ru" ? (
             <div className="settings-block goida-test-panel">
               <div>
@@ -24,10 +31,9 @@ export default async function SettingsPage() {
               <GoidaTestButton />
             </div>
           ) : null}
-          <BoardSettings columns={JSON.parse(JSON.stringify(view?.board.columns ?? []))} canManage={user.role.name === "ADMIN"} />
-          <OilDepotSettings oilDepots={JSON.parse(JSON.stringify(view?.oilDepots ?? []))} canManage={user.role.name === "ADMIN"} />
         </section>
       </div>
     </AppShell>
   );
 }
+import { Settings2 } from "lucide-react";

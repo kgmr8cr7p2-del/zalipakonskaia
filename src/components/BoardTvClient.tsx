@@ -51,11 +51,17 @@ const officeJokes = [
   "Планерка прошла успешно: все задачи получили новые задачи.",
 ];
 
+type TvJoke = {
+  text: string;
+  sourceUrl: string | null;
+  updatedAt: string;
+};
+
 export function BoardTvClient({ initialView }: { initialView: View }) {
   const [view, setView] = useState(initialView);
   const [weather, setWeather] = useState<Weather | null>(null);
   const [now, setNow] = useState(new Date());
-  const [jokeIndex, setJokeIndex] = useState(0);
+  const [joke, setJoke] = useState<TvJoke>({ text: officeJokes[0], sourceUrl: null, updatedAt: "fallback" });
   const [lastUpdatedAt, setLastUpdatedAt] = useState(new Date());
   const [connectionState, setConnectionState] = useState<"live" | "stale">("live");
 
@@ -68,9 +74,8 @@ export function BoardTvClient({ initialView }: { initialView: View }) {
   }, []);
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setJokeIndex((current) => (current + 1) % officeJokes.length);
-    }, 5 * 60 * 1000);
+    void refreshJoke();
+    const timer = window.setInterval(() => void refreshJoke(), 5 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -110,6 +115,21 @@ export function BoardTvClient({ initialView }: { initialView: View }) {
     if (direct) setWeather(direct);
   }
 
+  async function refreshJoke() {
+    try {
+      const response = await fetch(`/api/jokes/shortiki?at=${Date.now()}`, { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok || !data.joke) throw new Error(data.error ?? "Joke refresh failed");
+      setJoke({ text: data.joke, sourceUrl: data.sourceUrl ?? "https://shortiki.com/", updatedAt: data.updatedAt ?? String(Date.now()) });
+    } catch {
+      setJoke((current) => {
+        if (current.sourceUrl) return current;
+        const currentIndex = Math.max(0, officeJokes.indexOf(current.text));
+        return { text: officeJokes[(currentIndex + 1) % officeJokes.length], sourceUrl: null, updatedAt: String(Date.now()) };
+      });
+    }
+  }
+
   return (
     <main className="tv-page">
       <header className="tv-hero">
@@ -134,9 +154,12 @@ export function BoardTvClient({ initialView }: { initialView: View }) {
 
         <WeatherPanel weather={weather} />
 
-        <section className="tv-joke-card" aria-label="Анекдот">
-          <span>Анекдот дня</span>
-          <strong>{officeJokes[jokeIndex]}</strong>
+        <section className="tv-joke-card" aria-label="Случайный анекдот" aria-live="polite">
+          <span className="tv-joke-label">
+            Анекдот · обновление через 5 минут
+            {joke.sourceUrl ? <a href={joke.sourceUrl}>shortiki.com</a> : null}
+          </span>
+          <strong key={joke.updatedAt}>{joke.text}</strong>
         </section>
       </header>
 
