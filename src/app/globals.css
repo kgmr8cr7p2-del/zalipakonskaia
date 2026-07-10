@@ -364,6 +364,7 @@
     --paw-reach: 0px;
     --paw-shift: 0px;
     position: relative;
+    z-index: 20;
     isolation: isolate;
     overflow: visible;
   }
