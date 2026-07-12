@@ -45,6 +45,19 @@ export async function sendWeeklyReportMessage(message: string) {
   return sendToChats(token, [...chatIds], message, "Telegram weekly report failed");
 }
 
+export async function sendTelegramStartMessage(chatId: string) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return { sent: 0, failed: 0, reason: "token_missing" as const };
+
+  const message = [
+    "👋 <b>Team Kanban Board</b>",
+    "",
+    "Создайте новую задачу прямо из Telegram — она сразу появится на доске сайта.",
+  ].join("\n");
+
+  return sendToChats(token, [chatId], message, "Telegram /start response failed");
+}
+
 export async function notifyTelegram(event: TelegramEvent, message: string, userIds: string[] = []) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return;

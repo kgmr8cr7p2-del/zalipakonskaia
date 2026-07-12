@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "telegram:webhook": "node scripts/setup-telegram-webhook.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

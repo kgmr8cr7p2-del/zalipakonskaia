@@ -383,22 +383,22 @@ export function BoardClient({ initialView }: { initialView: View }) {
           </button>
         </form>
         <span className="spacer" />
-        <span className="sync-pill" title="Доска обновляется автоматически каждые 10 секунд">
+        <span className="sync-pill mobile-optional" title="Доска обновляется автоматически каждые 10 секунд">
           Обновлено {timeOnly(lastUpdatedAt)}
         </span>
-        <button className="button secondary compact-button" type="button" onClick={() => void toggleFocusMode()} title="Режим просмотра доски">
+        <button className="button secondary compact-button mobile-optional" type="button" onClick={() => void toggleFocusMode()} title="Режим просмотра доски">
           <Expand size={17} />
           Доска
         </button>
-        <a className="button secondary compact-button" href="/board/tv" title="TV-режим для офисного экрана">
+        <a className="button secondary compact-button mobile-optional" href="/board/tv" title="TV-режим для офисного экрана">
           <Monitor size={17} />
           TV
         </a>
-        <a className="button secondary" href={`/api/export?${new URLSearchParams(Object.entries(filters).filter(([, value]) => value)).toString()}`}>
+        <a className="button secondary board-export mobile-optional" href={`/api/export?${new URLSearchParams(Object.entries(filters).filter(([, value]) => value)).toString()}`}>
           <Download size={17} />
           Excel
         </a>
-        <span className="avatar" title={view.currentUser.email}>
+        <span className="avatar mobile-optional" title={view.currentUser.email}>
           {view.currentUser.name.slice(0, 1).toUpperCase()}
         </span>
       </div>

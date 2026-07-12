@@ -34,6 +34,7 @@ services:
       INVITED_EMAILS: ${INVITED_EMAILS:-}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_DEFAULT_CHAT_ID: ${TELEGRAM_DEFAULT_CHAT_ID:-}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
     volumes:
       - team-kanban-uploads:/app/uploads
     depends_on:

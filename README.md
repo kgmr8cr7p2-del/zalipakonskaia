@@ -45,3 +45,11 @@ npm run dev
 ```bash
 POST /api/notifications/deadlines
 ```
+
+Чтобы бот отвечал на `/start` кнопкой «Создать задачу», укажите публичный HTTPS-адрес в `APP_URL`, задайте случайный `TELEGRAM_WEBHOOK_SECRET` и зарегистрируйте webhook:
+
+```bash
+npm run telegram:webhook
+```
+
+Команда регистрирует `/start` в меню бота и направляет Telegram на `POST /api/telegram/webhook`.

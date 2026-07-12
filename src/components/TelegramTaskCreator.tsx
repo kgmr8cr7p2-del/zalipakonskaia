@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Send, X } from "lucide-react";
+import { CheckCircle2, ListChecks, Plus, Send, Trash2, X } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
 type FormDataSource = {
@@ -24,6 +24,7 @@ export function TelegramTaskCreator({ canCreate, data }: { canCreate: boolean; d
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [createdTask, setCreatedTask] = useState<{ taskNumber: number; title: string } | null>(null);
+  const [checklistItems, setChecklistItems] = useState([""]);
 
   useEffect(() => {
     const webApp = (window as TelegramWindow).Telegram?.WebApp;
@@ -51,7 +52,10 @@ export function TelegramTaskCreator({ canCreate, data }: { canCreate: boolean; d
           deadline: String(values.get("deadline") ?? "") || null,
           assigneeId: String(values.get("assigneeId") ?? "") || null,
           initialComment: String(values.get("initialComment") ?? "") || null,
-          initialChecklist: [],
+          initialChecklist: values
+            .getAll("initialChecklist")
+            .map((item) => String(item).trim())
+            .filter(Boolean),
           tags: [],
         }),
       });
@@ -62,6 +66,7 @@ export function TelegramTaskCreator({ canCreate, data }: { canCreate: boolean; d
       }
       setCreatedTask({ taskNumber: result.task.taskNumber, title: result.task.title });
       form.reset();
+      setChecklistItems([""]);
     } catch {
       setError("Нет связи с сервером. Попробуйте ещё раз.");
     } finally {
@@ -102,7 +107,7 @@ export function TelegramTaskCreator({ canCreate, data }: { canCreate: boolean; d
         <form className="telegram-create-form" onSubmit={submit} aria-busy={loading}>
           <label className="field">
             <span className="label">Название</span>
-            <input className="input" name="title" required minLength={2} maxLength={180} autoFocus placeholder="Что нужно сделать" />
+            <input className="input" name="title" required minLength={2} maxLength={180} autoFocus placeholder="Что нужно сделать" enterKeyHint="next" />
           </label>
           <label className="field">
             <span className="label">Нефтебаза</span>
@@ -141,14 +146,52 @@ export function TelegramTaskCreator({ canCreate, data }: { canCreate: boolean; d
           </label>
           <label className="field">
             <span className="label">Описание</span>
-            <textarea className="textarea" name="description" rows={3} placeholder="Короткий контекст" />
+            <textarea className="textarea" name="description" rows={3} maxLength={4000} placeholder="Короткий контекст" />
           </label>
+          <fieldset className="telegram-checklist">
+            <legend>
+              <ListChecks size={17} />
+              Чек-лист
+              <span>{checklistItems.filter((item) => item.trim()).length}</span>
+            </legend>
+            <div className="telegram-checklist-items">
+              {checklistItems.map((item, index) => (
+                <div className="telegram-checklist-row" key={index}>
+                  <input
+                    className="input"
+                    name="initialChecklist"
+                    value={item}
+                    maxLength={240}
+                    placeholder={index === 0 ? "Добавить пункт" : "Ещё один пункт"}
+                    onChange={(event) => {
+                      const value = event.currentTarget.value;
+                      setChecklistItems((current) => current.map((currentItem, itemIndex) => itemIndex === index ? value : currentItem));
+                    }}
+                  />
+                  {checklistItems.length > 1 ? (
+                    <button
+                      className="button icon secondary"
+                      type="button"
+                      aria-label={`Удалить пункт ${index + 1}`}
+                      onClick={() => setChecklistItems((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+            <button className="button ghost telegram-checklist-add" type="button" onClick={() => setChecklistItems((current) => [...current, ""])}>
+              <Plus size={17} />
+              Добавить пункт
+            </button>
+          </fieldset>
           <label className="field">
             <span className="label">Первый комментарий</span>
-            <textarea className="textarea" name="initialComment" rows={2} />
+            <textarea className="textarea" name="initialComment" rows={2} maxLength={2000} />
           </label>
           {error ? <p className="settings-error" role="alert">{error}</p> : null}
-          <button className="button telegram-create-submit" disabled={loading}>
+          <button className="button telegram-create-submit" disabled={loading} type="submit">
             <Send size={18} />
             {loading ? "Создаём…" : "Создать задачу"}
           </button>

@@ -9,68 +9,24 @@ import { handleRouteError, ok } from "@/lib/http";
 function formatReport(report: Awaited<ReturnType<typeof getWeeklyReport>>) {
   const lines: string[] = [
     "📊 <b>Еженедельный отчёт</b>",
-    "━━━━━━━━━━━━━━━━━━",
+    `📅 ${formatDate(report.period.from)} — ${formatDate(report.period.to)}`,
     "",
-    `📅 Период: <b>${formatDate(report.period.from)} — ${formatDate(report.period.to)}</b>`,
+    "<b>Итоги недели</b>",
+    `🟣 Создано: <b>${report.totals.createdThisWeek}</b>   ·   ✅ Выполнено: <b>${report.totals.completedThisWeek}</b>`,
+    `🔧 В работе: <b>${report.totals.inProgress}</b>   ·   👀 На проверке: <b>${report.totals.inReview}</b>`,
+    `🔴 Просрочено: <b>${report.totals.overdue}</b>   ·   ⚠️ Критических: <b>${report.totals.critical}</b>`,
+    `📋 Активных: <b>${report.totals.active}</b>   ·   📦 Всего: <b>${report.totals.total}</b>`,
     "",
-    "━━━ <b>ОБЩАЯ СТАТИСТИКА</b> ━━━",
-    `🟣 Создано задач за неделю: <b>${report.totals.createdThisWeek}</b>`,
-    `✅ Выполнено за неделю: <b>${report.totals.completedThisWeek}</b>`,
-    `📋 Активных задач: <b>${report.totals.active}</b>`,
-    `🔧 В работе: <b>${report.totals.inProgress}</b>`,
-    `👀 На проверке: <b>${report.totals.inReview}</b>`,
-    `🔴 Просрочено: <b>${report.totals.overdue}</b>`,
-    `⚠️ Критических: <b>${report.totals.critical}</b>`,
-    `📦 Всего задач на доске: <b>${report.totals.total}</b>`,
-    `💬 Добавлено комментариев: <b>${report.totals.commentsAdded}</b>`,
-    `📎 Загружено файлов: <b>${report.totals.filesUploaded}</b>`,
-    `☑️ Изменений чек-листов: <b>${report.totals.checklistChanges}</b>`,
-    `🔁 Перемещений между статусами: <b>${report.totals.statusChanges}</b>`,
-    "",
+    "<b>Активность команды</b>",
+    `💬 Комментарии: <b>${report.totals.commentsAdded}</b>   ·   📎 Файлы: <b>${report.totals.filesUploaded}</b>`,
+    `☑️ Чек-листы: <b>${report.totals.checklistChanges}</b>   ·   🔁 Смены статуса: <b>${report.totals.statusChanges}</b>`,
   ];
-
-  if (report.byAssignee.length) {
-    lines.push("━━━ <b>ПО ИСПОЛНИТЕЛЯМ</b> ━━━");
-    for (const a of report.byAssignee) {
-      lines.push(`👤 ${escape(a.name)}: активно ${a.active}, создано ${a.created}, выполнено ${a.completed}, просрочено ${a.overdue}`);
-    }
-    lines.push("");
-  }
-
-  if (report.byDepot.length) {
-    lines.push("━━━ <b>ПО НЕФТЕБАЗАМ</b> ━━━");
-    for (const d of report.byDepot) {
-      lines.push(`🏭 ${escape(d.name)}: активно ${d.active}, создано ${d.created}, выполнено ${d.completed}`);
-    }
-    lines.push("");
-  }
-
-  if (report.topCreated.length) {
-    lines.push("━━━ <b>ПОСЛЕДНИЕ СОЗДАННЫЕ</b> ━━━");
-    for (const t of report.topCreated) {
-      lines.push(`🟣 #${t.taskNumber} ${escape(t.title)} (${escape(t.author)}, ${escape(t.depot)})`);
-    }
-    lines.push("");
-  }
-
-  if (report.topCompleted.length) {
-    lines.push("━━━ <b>ПОСЛЕДНИЕ ВЫПОЛНЕННЫЕ</b> ━━━");
-    for (const t of report.topCompleted) {
-      lines.push(`✅ #${t.taskNumber} ${escape(t.title)} (${escape(t.assignee)}, ${escape(t.depot)})`);
-    }
-    lines.push("");
-  }
-
-  lines.push("<i>Team Kanban Board — автоотчёт</i>");
+  lines.push("", "<i>Team Kanban Board · автоотчёт</i>");
   return lines.join("\n");
 }
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(iso));
-}
-
-function escape(value: string) {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
 export async function POST(request: Request) {
