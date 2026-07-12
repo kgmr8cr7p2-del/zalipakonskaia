@@ -18,6 +18,20 @@ compose() {
   docker compose --env-file .env.production -f "${COMPOSE_FILE}" "$@"
 }
 
+ensure_telegram_webhook_secret() {
+  if grep -Eq '^TELEGRAM_WEBHOOK_SECRET=.+$' .env.production; then
+    return
+  fi
+
+  local webhook_secret
+  webhook_secret="$(openssl rand -hex 32)"
+  if grep -q '^TELEGRAM_WEBHOOK_SECRET=' .env.production; then
+    sed -i "s/^TELEGRAM_WEBHOOK_SECRET=.*/TELEGRAM_WEBHOOK_SECRET=${webhook_secret}/" .env.production
+  else
+    printf '\nTELEGRAM_WEBHOOK_SECRET=%s\n' "${webhook_secret}" >> .env.production
+  fi
+}
+
 restore_previous_release() {
   if [[ "${SOURCE_SWITCHED}" -eq 1 && -f "${BACKUP_PATH}" ]]; then
     find "${APP_DIR}" -mindepth 1 -maxdepth 1 \
@@ -73,6 +87,7 @@ SOURCE_SWITCHED=1
 
 docker tag "${CANDIDATE_IMAGE}" "${LIVE_IMAGE}"
 cd "${APP_DIR}"
+ensure_telegram_webhook_secret
 compose up -d --no-deps --no-build --force-recreate app scheduler
 compose exec -T app npx prisma migrate deploy
 
@@ -90,6 +105,10 @@ done
 if [[ "${healthy}" -ne 1 ]]; then
   echo "The application did not pass its readiness check." >&2
   exit 1
+fi
+
+if compose exec -T app node -e "process.exit(process.env.TELEGRAM_BOT_TOKEN ? 0 : 1)"; then
+  compose exec -T app node scripts/setup-telegram-webhook.mjs
 fi
 
 docker image rm "${CANDIDATE_IMAGE}" >/dev/null 2>&1 || true
