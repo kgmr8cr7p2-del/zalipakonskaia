@@ -33,6 +33,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
   const [toasts, setToasts] = useState<Array<{ id: string; text: string }>>([]);
   const [confirmation, setConfirmation] = useState<"archive" | "delete" | null>(null);
   const activityFingerprintRef = useRef(initialView?.activityLogs?.[0]?.id ?? "");
+  const boardIdRef = useRef(initialView?.board?.id ?? "");
 
   const tasks = useMemo(() => view?.board?.columns?.flatMap((column: any) => column.tasks) ?? [], [view]);
   const visibleColumns = useMemo(
@@ -61,8 +62,9 @@ export function BoardClient({ initialView }: { initialView: View }) {
     setCreateOpen(true);
   }
 
-  async function refresh(nextFilters = filtersRef.current, options: { syncUrl?: boolean } = {}) {
+  async function refresh(nextFilters = filtersRef.current, options: { syncUrl?: boolean; boardId?: string } = {}) {
     const params = new URLSearchParams(Object.entries(nextFilters).filter(([, value]) => value));
+    params.set("board", options.boardId ?? boardIdRef.current);
     const response = await fetch(`/api/board?${params.toString()}`);
     const data = await response.json();
     if (response.ok) {
@@ -71,12 +73,20 @@ export function BoardClient({ initialView }: { initialView: View }) {
         pushToast(`${activityLabel(latestActivity.action)}: ${latestActivity.task?.title ?? "доска"}`);
       }
       if (latestActivity?.id) activityFingerprintRef.current = latestActivity.id;
+      boardIdRef.current = data.board.id;
       setView(data);
       setLastUpdatedAt(new Date());
       if (options.syncUrl) window.history.replaceState(null, "", params.toString() ? `/board?${params.toString()}` : "/board");
     } else {
       setError(data.error ?? "Не удалось обновить доску");
     }
+  }
+
+  function switchBoard(boardId: string) {
+    setSelected(null);
+    setCreateOpen(false);
+    setError("");
+    void refresh(filtersRef.current, { boardId, syncUrl: true });
   }
 
   function pushToast(text: string) {
@@ -374,7 +384,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
           <Monitor size={17} />
           TV
         </a>
-        <a className="button secondary board-export mobile-optional" href={`/api/export?${new URLSearchParams(Object.entries(filters).filter(([, value]) => value)).toString()}`}>
+        <a className="button secondary board-export mobile-optional" href={`/api/export?${new URLSearchParams([...Object.entries(filters).filter(([, value]) => value), ["board", view.board.id]]).toString()}`}>
           <Download size={17} />
           Excel
         </a>
@@ -394,6 +404,16 @@ export function BoardClient({ initialView }: { initialView: View }) {
         <div className="board-head">
           <div className="board-copy">
             <h1>{view.board.name}</h1>
+            <label className="board-switcher">
+              <span className="visually-hidden">Выбрать доску</span>
+              <select className="select" value={view.board.id} onChange={(event) => switchBoard(event.currentTarget.value)}>
+                {view.availableBoards.map((board: any) => (
+                  <option key={board.id} value={board.id}>
+                    {board.ownerId ? `Личная · ${board.name}` : `Общая · ${board.name}`}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
           <span className="spacer" />
           <div className="board-view-tabs board-view-tabs-inline" role="tablist" aria-label="Режим отображения">

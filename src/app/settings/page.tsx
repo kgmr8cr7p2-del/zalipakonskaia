@@ -2,6 +2,7 @@ import { AppShell } from "@/components/AppShell";
 import { BoardSettings } from "@/components/BoardSettings";
 import { GoidaTestButton } from "@/components/GoidaTestButton";
 import { OilDepotSettings } from "@/components/OilDepotSettings";
+import { PersonalBoardSettings } from "@/components/PersonalBoardSettings";
 import { requireVerifiedUser } from "@/lib/auth";
 import { getBoardView } from "@/lib/board-data";
 
@@ -18,6 +19,7 @@ export default async function SettingsPage() {
           <p>Колонки определяют рабочий процесс, а нефтебазы помогают связывать задачи с объектами.</p>
         </header>
         <div className="settings-managers">
+          <PersonalBoardSettings initialBoards={JSON.parse(JSON.stringify((view?.availableBoards ?? []).filter((board: any) => board.ownerId === user.id)))} />
           <BoardSettings columns={JSON.parse(JSON.stringify(view?.board.columns ?? []))} canManage={user.role.name === "ADMIN"} />
           <OilDepotSettings oilDepots={JSON.parse(JSON.stringify(view?.oilDepots ?? []))} canManage={user.role.name === "ADMIN"} />
         </div>

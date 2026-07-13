@@ -9,6 +9,7 @@ import { fail, handleRouteError, ok } from "@/lib/http";
 import { taskSchema } from "@/lib/validators";
 import { tagConnects } from "@/lib/tags";
 import { triggerTaskSoundEvent } from "@/lib/task-sound-event";
+import { getAccessibleColumn } from "@/lib/board-access";
 
 const priorityLabels = {
   LOW: "Низкая",
@@ -20,8 +21,12 @@ const priorityLabels = {
 export async function POST(request: Request) {
   try {
     const user = await requireVerifiedUser();
-    if (!canCreateTask(user)) return fail("Недостаточно прав для создания задачи", 403);
     const input = taskSchema.parse(await request.json());
+    const targetColumn = await getAccessibleColumn(user.id, input.columnId);
+    if (!targetColumn) return fail("Колонка не найдена", 404);
+    const isPersonalBoard = targetColumn.board.ownerId === user.id;
+    if (!isPersonalBoard && !canCreateTask(user)) return fail("Недостаточно прав для создания задачи", 403);
+    if (isPersonalBoard && input.assigneeId && input.assigneeId !== user.id) return fail("На личной доске задачу можно назначить только себе", 403);
     const maxPosition = await prisma.task.aggregate({
       where: { columnId: input.columnId },
       _max: { position: true },
@@ -75,12 +80,14 @@ export async function POST(request: Request) {
       taskId: task.id,
       details: { title: task.title },
     });
-    await notifyTelegram(
-      "task_created",
-      formatTaskCreatedMessage(taskWithDetails, user, initialComment),
-      taskWithDetails.assigneeId ? [taskWithDetails.assigneeId] : [],
-    );
-    triggerTaskSoundEvent();
+    if (!isPersonalBoard) {
+      await notifyTelegram(
+        "task_created",
+        formatTaskCreatedMessage(taskWithDetails, user, initialComment),
+        taskWithDetails.assigneeId ? [taskWithDetails.assigneeId] : [],
+      );
+      triggerTaskSoundEvent();
+    }
     return ok({ task: taskWithDetails });
   } catch (error) {
     return handleRouteError(error);

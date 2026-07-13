@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { canEditTask } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { fail, handleRouteError, ok } from "@/lib/http";
+import { canAccessTask } from "@/lib/board-access";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -16,7 +17,9 @@ export async function PATCH(request: Request, { params }: Params) {
       include: { checklist: { include: { task: true } } },
     });
     if (!existing) return fail("Пункт не найден", 404);
-    if (!canEditTask(user, existing.checklist.task)) return fail("Недостаточно прав", 403);
+    const access = await canAccessTask(user.id, existing.checklist.taskId);
+    if (!access) return fail("Пункт не найден", 404);
+    if (access.column.board.ownerId !== user.id && !canEditTask(user, existing.checklist.task)) return fail("Недостаточно прав", 403);
     const body = await request.json();
     const item = await prisma.checklistItem.update({
       where: { id },
@@ -46,7 +49,9 @@ export async function DELETE(_: Request, { params }: Params) {
       include: { checklist: { include: { task: true } } },
     });
     if (!existing) return fail("Пункт не найден", 404);
-    if (!canEditTask(user, existing.checklist.task)) return fail("Недостаточно прав", 403);
+    const access = await canAccessTask(user.id, existing.checklist.taskId);
+    if (!access) return fail("Пункт не найден", 404);
+    if (access.column.board.ownerId !== user.id && !canEditTask(user, existing.checklist.task)) return fail("Недостаточно прав", 403);
     await prisma.checklistItem.delete({ where: { id } });
     await logActivity({
       action: ActivityAction.CHECKLIST_CHANGED,

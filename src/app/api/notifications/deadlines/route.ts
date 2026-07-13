@@ -9,11 +9,11 @@ export async function POST() {
   const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const soon = await prisma.task.findMany({
-    where: { deadline: { gte: now, lte: tomorrow }, assigneeId: { not: null } },
+    where: { deadline: { gte: now, lte: tomorrow }, assigneeId: { not: null }, column: { board: { ownerId: null } } },
     select: { title: true, deadline: true, assigneeId: true },
   });
   const overdue = await prisma.task.findMany({
-    where: { deadline: { lt: now }, assigneeId: { not: null } },
+    where: { deadline: { lt: now }, assigneeId: { not: null }, column: { board: { ownerId: null } } },
     select: { title: true, deadline: true, assigneeId: true },
   });
 

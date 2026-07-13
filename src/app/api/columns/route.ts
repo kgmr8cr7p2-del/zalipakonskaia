@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   try {
     const user = await requireRole([RoleName.ADMIN]);
     const input = columnSchema.parse(await request.json());
-    const board = await prisma.board.findFirstOrThrow({ include: { columns: true } });
+    const board = await prisma.board.findFirstOrThrow({ where: { ownerId: null }, include: { columns: true } });
     const column = await prisma.column.create({
       data: {
         name: input.name,

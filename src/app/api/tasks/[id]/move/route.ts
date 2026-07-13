@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/activity";
 import { notifyTelegram } from "@/lib/telegram";
 import { fail, handleRouteError, ok } from "@/lib/http";
 import { triggerTaskCompletionSoundEvent } from "@/lib/task-sound-event";
+import { canAccessTask, getAccessibleColumn } from "@/lib/board-access";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -17,11 +18,15 @@ export async function POST(request: Request, { params }: Params) {
     const body = await request.json();
     const columnId = String(body.columnId ?? "");
     const position = Number(body.position ?? 0);
-    const destinationColumn = await prisma.column.findUnique({ where: { id: columnId }, select: { name: true } });
+    const access = await canAccessTask(user.id, id);
+    if (!access) return fail("Задача не найдена", 404);
+    const destinationColumn = await getAccessibleColumn(user.id, columnId);
     if (!destinationColumn) return fail("Колонка не найдена", 404);
+    if (destinationColumn.boardId !== access.column.boardId) return fail("Нельзя перенести задачу на другую доску", 400);
     const existing = await prisma.task.findUnique({ where: { id }, include: { column: { select: { name: true } } } });
     if (!existing) return fail("Задача не найдена", 404);
-    if (!canEditTask(user, existing)) return fail("Недостаточно прав", 403);
+    const isPersonalBoard = access.column.board.ownerId === user.id;
+    if (!isPersonalBoard && !canEditTask(user, existing)) return fail("Недостаточно прав", 403);
 
     const returnedFromReviewToWork = isReviewColumn(existing.column.name) && isWorkColumn(destinationColumn.name);
     const nextDeadline = returnedFromReviewToWork ? nextThursday() : undefined;
@@ -46,8 +51,8 @@ export async function POST(request: Request, { params }: Params) {
         details: { deadline: nextDeadline?.toISOString(), reason: "returned_from_review" },
       });
     }
-    await notifyTelegram("status_changed", `${task.title}: ${task.column.name}`, task.assigneeId ? [task.assigneeId] : []);
-    if (!isCompletedColumn(existing.column.name) && isCompletedColumn(destinationColumn.name)) {
+    if (!isPersonalBoard) await notifyTelegram("status_changed", `${task.title}: ${task.column.name}`, task.assigneeId ? [task.assigneeId] : []);
+    if (!isPersonalBoard && !isCompletedColumn(existing.column.name) && isCompletedColumn(destinationColumn.name)) {
       triggerTaskCompletionSoundEvent();
     }
     return ok({ task });

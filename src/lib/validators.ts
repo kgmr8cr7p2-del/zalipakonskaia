@@ -29,6 +29,10 @@ export const columnSchema = z.object({
   name: z.string().min(2).max(60),
 });
 
+export const personalBoardSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+});
+
 export const oilDepotSchema = z.object({
   name: z.string().min(2).max(120),
   active: z.boolean().optional(),

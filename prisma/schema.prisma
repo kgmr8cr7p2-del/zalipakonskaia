@@ -61,6 +61,7 @@ model User {
   sessions           Session[]
   emailTokens        EmailVerificationToken[]
   telegramConnection TelegramConnection?
+  personalBoards      Board[]                   @relation("PersonalBoardOwner")
 }
 
 model UserInvite {
@@ -85,9 +86,13 @@ model Session {
 model Board {
   id        String   @id @default(cuid())
   name      String
+  ownerId   String?
+  owner     User?    @relation("PersonalBoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   columns   Column[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
 }
 
 model Column {

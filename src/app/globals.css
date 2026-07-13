@@ -623,6 +623,26 @@
     letter-spacing: 0;
   }
 
+  .board-copy {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    min-inline-size: 0;
+  }
+
+  .board-switcher {
+    display: block;
+    min-inline-size: 0;
+  }
+
+  .board-switcher .select {
+    min-block-size: 2.25rem;
+    max-inline-size: min(19rem, 38vw);
+    padding-block: .35rem;
+    font-size: .78rem;
+    font-weight: 750;
+  }
+
   .filters {
     display: flex;
     flex-wrap: wrap;
@@ -3577,6 +3597,27 @@
     grid-template-columns: 2rem minmax(10rem, 1fr) auto minmax(6.2rem, auto) auto;
   }
 
+  .personal-board-row {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
+
+  .personal-board-copy {
+    display: grid;
+    gap: .15rem;
+    min-inline-size: 0;
+  }
+
+  .personal-board-copy strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .personal-board-copy span {
+    color: var(--muted);
+    font-size: .72rem;
+  }
+
   .settings-position {
     display: grid;
     inline-size: 2rem;
@@ -5059,11 +5100,6 @@
       white-space: nowrap;
     }
 
-    .create-task-paw-zone,
-    .create-task-button {
-      inline-size: auto;
-    }
-
     .board-view-tabs-inline {
       grid-column: 1 / -1;
       grid-row: 2;
@@ -5346,6 +5382,18 @@
 
     .settings-column-row {
       grid-template-columns: 2rem minmax(0, 1fr);
+    }
+
+    .personal-board-row {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .personal-board-row > .button {
+      inline-size: 100%;
+    }
+
+    .personal-board-row > .button.secondary {
+      grid-column: 1 / -1;
     }
 
     .settings-column-row .settings-item-meta,

@@ -10,6 +10,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { orderedIds?: unknown };
     const orderedIds = Array.isArray(body.orderedIds) ? body.orderedIds.filter((id): id is string => typeof id === "string") : [];
     const board = await prisma.board.findFirstOrThrow({
+      where: { ownerId: null },
       include: { columns: { select: { id: true } } },
     });
     const currentIds = board.columns.map((column) => column.id);

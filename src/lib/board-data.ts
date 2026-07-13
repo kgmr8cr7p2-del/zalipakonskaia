@@ -2,6 +2,7 @@ import { ActivityAction, Prisma, RoleName } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { CurrentUser } from "@/lib/auth";
 import { cleanupOldCompletedTasks } from "@/lib/cleanup";
+import { accessibleBoardWhere } from "@/lib/board-access";
 
 export const taskInclude = {
   column: true,
@@ -37,7 +38,11 @@ type ReportTask = Prisma.TaskGetPayload<{ include: typeof reportTaskInclude }>;
 export async function getBoardView(user: CurrentUser, filters?: URLSearchParams) {
   await cleanupOldCompletedTasks();
 
+  const requestedBoardId = filters?.get("board")?.trim();
   const board = await prisma.board.findFirst({
+    where: requestedBoardId
+      ? { id: requestedBoardId, ...accessibleBoardWhere(user.id) }
+      : { ownerId: null },
     include: {
       columns: {
         orderBy: { position: "asc" },
@@ -56,21 +61,31 @@ export async function getBoardView(user: CurrentUser, filters?: URLSearchParams)
   if (!board) return null;
 
   const users = await prisma.user.findMany({
+    where: board.ownerId ? { id: user.id } : undefined,
     include: { role: true, telegramConnection: true },
     orderBy: { name: "asc" },
   });
-  const tags = await prisma.tag.findMany({ orderBy: { name: "asc" } });
+  const tags = await prisma.tag.findMany({
+    where: { tasks: { some: { task: { column: { boardId: board.id } } } } },
+    orderBy: { name: "asc" },
+  });
   const oilDepots = await prisma.oilDepot.findMany({
-    include: { _count: { select: { tasks: true } } },
+    include: { _count: { select: { tasks: { where: { column: { boardId: board.id } } } } } },
     orderBy: { name: "asc" },
   });
   const activityLogs = await prisma.activityLog.findMany({
+    where: { task: { column: { boardId: board.id } } },
     include: {
       user: { select: { id: true, name: true, email: true } },
       task: { select: { id: true, taskNumber: true, title: true, oilDepot: true } },
     },
     orderBy: { createdAt: "desc" },
     take: 80,
+  });
+  const availableBoards = await prisma.board.findMany({
+    where: accessibleBoardWhere(user.id),
+    select: { id: true, name: true, ownerId: true, _count: { select: { columns: true } } },
+    orderBy: [{ ownerId: "asc" }, { createdAt: "asc" }],
   });
 
   const query = filters?.get("q")?.trim().toLowerCase();
@@ -106,6 +121,7 @@ export async function getBoardView(user: CurrentUser, filters?: URLSearchParams)
 
   return {
     board: { ...board, columns: filteredColumns },
+    availableBoards,
     users,
     tags,
     oilDepots,
@@ -120,9 +136,9 @@ export async function getBoardView(user: CurrentUser, filters?: URLSearchParams)
     },
     permissions: {
       canManageColumns: user.role.name === RoleName.ADMIN,
-      canCreateTask: user.role.name === RoleName.ADMIN || user.role.name === RoleName.MANAGER,
-      canDeleteTask: user.role.name === RoleName.ADMIN,
-      canAssign: user.role.name === RoleName.ADMIN || user.role.name === RoleName.MANAGER,
+      canCreateTask: Boolean(board.ownerId) || user.role.name === RoleName.ADMIN || user.role.name === RoleName.MANAGER,
+      canDeleteTask: Boolean(board.ownerId) || user.role.name === RoleName.ADMIN,
+      canAssign: Boolean(board.ownerId) || user.role.name === RoleName.ADMIN || user.role.name === RoleName.MANAGER,
     },
   };
 }
@@ -151,6 +167,7 @@ export async function getActivityHistory(filters?: URLSearchParams) {
 
   return prisma.activityLog.findMany({
     where: {
+      OR: [{ task: { column: { board: { ownerId: null } } } }, { taskId: null }],
       createdAt: {
         gte: from,
         lte: to,
@@ -196,6 +213,7 @@ export async function getReportsData(filters?: URLSearchParams) {
   const mode = normalizeReportMode(filters?.get("mode"));
 
   const tasks = await prisma.task.findMany({
+    where: { column: { board: { ownerId: null } } },
     include: reportTaskInclude,
   });
   const activeTasks = tasks.filter((task) => !task.archivedAt);

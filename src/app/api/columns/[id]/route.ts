@@ -11,6 +11,8 @@ export async function PATCH(request: Request, { params }: Params) {
   try {
     const user = await requireRole([RoleName.ADMIN]);
     const { id } = await params;
+    const existing = await prisma.column.findFirst({ where: { id, board: { ownerId: null } }, select: { id: true } });
+    if (!existing) return fail("Колонка общей доски не найдена", 404);
     const body = await request.json();
     const data: { name?: string; position?: number } = {};
     if (typeof body.name === "string") data.name = columnSchema.parse({ name: body.name }).name;
@@ -32,6 +34,8 @@ export async function DELETE(_: Request, { params }: Params) {
   try {
     const user = await requireRole([RoleName.ADMIN]);
     const { id } = await params;
+    const existing = await prisma.column.findFirst({ where: { id, board: { ownerId: null } }, select: { id: true } });
+    if (!existing) return fail("Колонка общей доски не найдена", 404);
     const taskCount = await prisma.task.count({ where: { columnId: id } });
     if (taskCount > 0) return fail("Нельзя удалить колонку, пока в ней есть задачи", 409);
     await prisma.column.delete({ where: { id } });

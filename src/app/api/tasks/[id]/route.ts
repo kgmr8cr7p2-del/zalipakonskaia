@@ -11,6 +11,7 @@ import { fail, handleRouteError, ok } from "@/lib/http";
 import { taskSchema } from "@/lib/validators";
 import { tagConnects } from "@/lib/tags";
 import { triggerTaskCompletionSoundEvent } from "@/lib/task-sound-event";
+import { canAccessTask, getAccessibleColumn } from "@/lib/board-access";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -18,14 +19,22 @@ export async function PATCH(request: Request, { params }: Params) {
   try {
     const user = await requireVerifiedUser();
     const { id } = await params;
+    const access = await canAccessTask(user.id, id);
+    if (!access) return fail("Задача не найдена", 404);
+    const isPersonalBoard = access.column.board.ownerId === user.id;
     const existing = await prisma.task.findUnique({
       where: { id },
       include: { column: { select: { name: true } } },
     });
     if (!existing) return fail("Задача не найдена", 404);
-    if (!canEditTask(user, existing)) return fail("Недостаточно прав", 403);
+    if (!isPersonalBoard && !canEditTask(user, existing)) return fail("Недостаточно прав", 403);
 
     const input = taskSchema.partial().parse(await request.json());
+    if (input.columnId) {
+      const targetColumn = await getAccessibleColumn(user.id, input.columnId);
+      if (!targetColumn || targetColumn.boardId !== access.column.boardId) return fail("Нельзя перенести задачу на другую доску", 400);
+    }
+    if (isPersonalBoard && input.assigneeId && input.assigneeId !== user.id) return fail("На личной доске задачу можно назначить только себе", 403);
     const changes: ActivityAction[] = [];
     if (input.title && input.title !== existing.title) changes.push(ActivityAction.TITLE_CHANGED);
     if (input.description !== undefined && input.description !== existing.description) changes.push(ActivityAction.DESCRIPTION_CHANGED);
@@ -64,13 +73,13 @@ export async function PATCH(request: Request, { params }: Params) {
         }),
       ),
     );
-    if (changes.includes(ActivityAction.STATUS_CHANGED)) {
+    if (!isPersonalBoard && changes.includes(ActivityAction.STATUS_CHANGED)) {
       await notifyTelegram("status_changed", `${task.title}: ${task.column.name}`, task.assigneeId ? [task.assigneeId] : []);
       if (!isCompletedColumn(existing.column.name) && isCompletedColumn(task.column.name)) {
         triggerTaskCompletionSoundEvent();
       }
     }
-    if (changes.includes(ActivityAction.ASSIGNEE_CHANGED)) {
+    if (!isPersonalBoard && changes.includes(ActivityAction.ASSIGNEE_CHANGED)) {
       await notifyTelegram("assignee_changed", formatAssigneeChangedMessage(task, user), task.assigneeId ? [task.assigneeId] : []);
     }
     return ok({ task });
@@ -92,8 +101,10 @@ function isCompletedColumn(name: string) {
 export async function DELETE(_: Request, { params }: Params) {
   try {
     const user = await requireVerifiedUser();
-    if (!canDeleteTask(user)) return fail("Удалять задачи может только администратор", 403);
     const { id } = await params;
+    const access = await canAccessTask(user.id, id);
+    if (!access) return fail("Задача не найдена", 404);
+    if (access.column.board.ownerId !== user.id && !canDeleteTask(user)) return fail("Удалять задачи общей доски может только администратор", 403);
     const task = await prisma.task.findUnique({
       where: { id },
       select: {
@@ -108,18 +119,20 @@ export async function DELETE(_: Request, { params }: Params) {
 
     await prisma.task.delete({ where: { id } });
     await rm(path.join(process.cwd(), "uploads", id), { recursive: true, force: true }).catch(() => undefined);
-    await logActivity({
-      action: ActivityAction.TASK_DELETED,
-      userId: user.id,
-      details: {
-        taskId: task.id,
-        taskNumber: task.taskNumber,
-        title: task.title,
-        oilDepotId: task.oilDepotId,
-        oilDepotName: task.oilDepot?.name ?? null,
-        deletedPermanently: true,
-      },
-    });
+    if (!access.column.board.ownerId) {
+      await logActivity({
+        action: ActivityAction.TASK_DELETED,
+        userId: user.id,
+        details: {
+          taskId: task.id,
+          taskNumber: task.taskNumber,
+          title: task.title,
+          oilDepotId: task.oilDepotId,
+          oilDepotName: task.oilDepot?.name ?? null,
+          deletedPermanently: true,
+        },
+      });
+    }
     return ok({ ok: true });
   } catch (error) {
     return handleRouteError(error);

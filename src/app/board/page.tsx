@@ -2,6 +2,7 @@ import { AppShell } from "@/components/AppShell";
 import { BoardClient } from "@/components/BoardClient";
 import { requireVerifiedUser } from "@/lib/auth";
 import { getBoardView } from "@/lib/board-data";
+import { notFound } from "next/navigation";
 
 export default async function BoardPage({
   searchParams,
@@ -15,6 +16,7 @@ export default async function BoardPage({
     if (typeof value === "string") urlParams.set(key, value);
   }
   const view = await getBoardView(user, urlParams);
+  if (!view) notFound();
   const serializable = JSON.parse(JSON.stringify(view));
 
   return (

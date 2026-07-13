@@ -1,11 +1,12 @@
 import { AppShell } from "@/components/AppShell";
 import { requireVerifiedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { accessibleBoardWhere } from "@/lib/board-access";
 
 export default async function ArchivePage() {
   const user = await requireVerifiedUser();
   const tasks = await prisma.task.findMany({
-    where: { archivedAt: { not: null } },
+    where: { archivedAt: { not: null }, column: { board: accessibleBoardWhere(user.id) } },
     include: {
       column: true,
       oilDepot: true,

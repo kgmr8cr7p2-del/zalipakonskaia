@@ -5,6 +5,7 @@ import { canEditTask } from "@/lib/permissions";
 import { checklistItemSchema } from "@/lib/validators";
 import { logActivity } from "@/lib/activity";
 import { fail, handleRouteError, ok } from "@/lib/http";
+import { canAccessTask } from "@/lib/board-access";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -14,7 +15,9 @@ export async function POST(request: Request, { params }: Params) {
     const { id } = await params;
     const checklist = await prisma.checklist.findUnique({ where: { id }, include: { task: true } });
     if (!checklist) return fail("Чек-лист не найден", 404);
-    if (!canEditTask(user, checklist.task)) return fail("Недостаточно прав", 403);
+    const access = await canAccessTask(user.id, checklist.taskId);
+    if (!access) return fail("Чек-лист не найден", 404);
+    if (access.column.board.ownerId !== user.id && !canEditTask(user, checklist.task)) return fail("Недостаточно прав", 403);
     const input = checklistItemSchema.parse(await request.json());
     const item = await prisma.checklistItem.create({
       data: { checklistId: id, text: input.text },
