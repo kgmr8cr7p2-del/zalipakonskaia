@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { canRegisterEmail, createSession, hashPassword } from "@/lib/auth";
 import { fail, handleRouteError, ok } from "@/lib/http";
 import { registerSchema } from "@/lib/validators";
+import { formatUserName } from "@/lib/user-name";
 
 const DEFAULT_TELEGRAM_CHAT_ID = "-5575713442";
 
@@ -25,7 +26,10 @@ export async function POST(request: Request) {
     const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
     const user = await prisma.user.create({
       data: {
-        name: input.name,
+        name: formatUserName(input),
+        lastName: input.lastName,
+        firstName: input.firstName,
+        middleName: input.middleName,
         email: input.email,
         passwordHash: await hashPassword(input.password),
         roleId: role.id,

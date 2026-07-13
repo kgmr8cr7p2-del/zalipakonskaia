@@ -9,6 +9,9 @@ import "./ProfileCard.css";
 export type ProfileUser = {
   id: string;
   name: string;
+  lastName?: string | null;
+  firstName?: string | null;
+  middleName?: string | null;
   email: string;
   jobTitle?: string | null;
   handle?: string | null;

@@ -5,6 +5,7 @@ import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "r
 import { useRouter } from "next/navigation";
 import ProfileCard, { type ProfileUser, ProfileAvatar } from "@/components/ProfileCard/ProfileCard";
 import { presenceLabel } from "@/lib/presence";
+import { formatUserName } from "@/lib/user-name";
 
 const TELEGRAM_INVITE_URL = "https://t.me/+V1kH1F871nc5MTUy";
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
@@ -16,10 +17,13 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
   const cropCanvasRef = useRef<HTMLCanvasElement>(null);
   const sourceImageRef = useRef<HTMLImageElement | null>(null);
   const [draft, setDraft] = useState({
-    name: user.name,
+    lastName: user.lastName ?? "",
+    firstName: user.firstName || user.name,
+    middleName: user.middleName ?? "",
     jobTitle: user.jobTitle ?? "",
     handle: user.handle ?? "",
   });
+  const displayName = formatUserName(draft) || user.name;
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [sourceUrl, setSourceUrl] = useState("");
@@ -101,7 +105,7 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
       setAvatarFile(null);
       setStatus("saved");
       setMessage("Профиль сохранён");
-      window.dispatchEvent(new CustomEvent("profileupdated", { detail: { ...draft, avatarUrl: nextAvatarUrl } }));
+      window.dispatchEvent(new CustomEvent("profileupdated", { detail: { ...draft, name: displayName, avatarUrl: nextAvatarUrl } }));
       router.refresh();
     } catch (error) {
       setStatus("error");
@@ -127,7 +131,7 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
     setPreviewUrl("");
     setStatus("saved");
     setMessage("Аватар удалён");
-    window.dispatchEvent(new CustomEvent("profileupdated", { detail: { ...draft, avatarUrl: "" } }));
+    window.dispatchEvent(new CustomEvent("profileupdated", { detail: { ...draft, name: displayName, avatarUrl: "" } }));
     router.refresh();
   }
 
@@ -135,7 +139,7 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
     <div className="profile-editor-layout">
       <form className="profile-editor-form" onSubmit={submit}>
         <section className="profile-avatar-editor" aria-labelledby="profile-photo-title">
-          <ProfileAvatar name={draft.name} avatarUrl={previewUrl} size={72} />
+          <ProfileAvatar name={displayName} avatarUrl={previewUrl} size={72} />
           <div>
             <h2 id="profile-photo-title">Фото профиля</h2>
             <p className="muted">JPG, PNG, WebP или GIF до 5 МБ.</p>
@@ -172,8 +176,16 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
 
         <div className="profile-fields-grid">
           <label className="field">
+            <span className="label">Фамилия</span>
+            <input className="input" name="lastName" autoComplete="family-name" value={draft.lastName} minLength={2} maxLength={80} required onChange={(event) => setDraft({ ...draft, lastName: event.target.value })} />
+          </label>
+          <label className="field">
             <span className="label">Имя</span>
-            <input className="input" name="name" autoComplete="name" value={draft.name} minLength={2} maxLength={80} required onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
+            <input className="input" name="firstName" autoComplete="given-name" value={draft.firstName} minLength={2} maxLength={80} required onChange={(event) => setDraft({ ...draft, firstName: event.target.value })} />
+          </label>
+          <label className="field">
+            <span className="label">Отчество <span className="optional-label">необязательно</span></span>
+            <input className="input" name="middleName" autoComplete="additional-name" value={draft.middleName} maxLength={80} onChange={(event) => setDraft({ ...draft, middleName: event.target.value })} />
           </label>
           <label className="field">
             <span className="label">Рабочая почта</span>
@@ -201,7 +213,7 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
 
       <aside className="profile-preview" aria-label="Предпросмотр карточки профиля">
         <span className="profile-preview-label">Так вас увидят коллеги</span>
-        <ProfileCard name={draft.name || "Ваше имя"} title={draft.jobTitle || "Участник команды"} handle={draft.handle} status={liveStatus} avatarUrl={previewUrl} showUserInfo enableTilt />
+        <ProfileCard name={displayName || "Ваше имя"} title={draft.jobTitle || "Участник команды"} handle={draft.handle} status={liveStatus} avatarUrl={previewUrl} showUserInfo enableTilt />
       </aside>
     </div>
   );

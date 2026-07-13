@@ -45,6 +45,9 @@ model Role {
 model User {
   id                 String                   @id @default(cuid())
   name               String
+  lastName           String                   @default("")
+  firstName          String                   @default("")
+  middleName         String                   @default("")
   jobTitle           String                   @default("")
   handle             String                   @default("")
   profileStatus      String                   @default("В сети")

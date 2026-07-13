@@ -2,7 +2,9 @@ import { Priority, RoleName } from "@prisma/client";
 import { z } from "zod";
 
 export const registerSchema = z.object({
-  name: z.string().min(2, "Введите имя"),
+  lastName: z.string().trim().min(2, "Введите фамилию").max(80),
+  firstName: z.string().trim().min(2, "Введите имя").max(80),
+  middleName: z.string().trim().max(80).default(""),
   email: z.string().email("Введите корректную почту").transform((value) => value.toLowerCase()),
   password: z.string().min(8, "Минимум 8 символов"),
 });
@@ -48,7 +50,9 @@ export const checklistItemSchema = z.object({
 });
 
 export const profileSchema = z.object({
-  name: z.string().min(2).max(80),
+  lastName: z.string().trim().min(2, "Введите фамилию").max(80),
+  firstName: z.string().trim().min(2, "Введите имя").max(80),
+  middleName: z.string().trim().max(80).default(""),
   jobTitle: z.string().trim().max(100).default(""),
   handle: z.string().trim().max(40).regex(/^[\p{L}\p{N}._-]*$/u, "Используйте буквы, цифры, точку, дефис или подчёркивание").default(""),
   telegramChatId: z.string().max(80).optional(),

@@ -39,12 +39,28 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
   return (
     <form className="form auth-form" action={submit} aria-busy={loading}>
       {mode === "register" ? (
-        <div className="field auth-field">
-          <label className="label" htmlFor="full-name">Имя</label>
-          <span className="auth-control">
-            <UserRound size={18} aria-hidden="true" />
-            <input id="full-name" name="name" autoComplete="name" enterKeyHint="next" minLength={2} maxLength={80} required placeholder="Как к вам обращаться" />
-          </span>
+        <div className="auth-name-grid">
+          <div className="field auth-field">
+            <label className="label" htmlFor="last-name">Фамилия</label>
+            <span className="auth-control">
+              <UserRound size={18} aria-hidden="true" />
+              <input id="last-name" name="lastName" autoComplete="family-name" enterKeyHint="next" minLength={2} maxLength={80} required placeholder="Иванов" />
+            </span>
+          </div>
+          <div className="field auth-field">
+            <label className="label" htmlFor="first-name">Имя</label>
+            <span className="auth-control">
+              <UserRound size={18} aria-hidden="true" />
+              <input id="first-name" name="firstName" autoComplete="given-name" enterKeyHint="next" minLength={2} maxLength={80} required placeholder="Иван" />
+            </span>
+          </div>
+          <div className="field auth-field auth-name-middle">
+            <label className="label" htmlFor="middle-name">Отчество <span className="optional-label">необязательно</span></label>
+            <span className="auth-control">
+              <UserRound size={18} aria-hidden="true" />
+              <input id="middle-name" name="middleName" autoComplete="additional-name" enterKeyHint="next" maxLength={80} placeholder="Иванович" />
+            </span>
+          </div>
         </div>
       ) : null}
       <div className="field auth-field">

@@ -193,20 +193,6 @@
     }
   }
 
-  @keyframes priority-scan {
-    0% {
-      transform: translateY(-120%);
-      opacity: 0;
-    }
-    35% {
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(240%);
-      opacity: 0;
-    }
-  }
-
   @keyframes hover-glow-breathe {
     0%, 100% { opacity: .88; }
     50% { opacity: 1; }
@@ -477,6 +463,22 @@
     margin-block-start: 1.7rem;
   }
 
+  .auth-name-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .auth-name-middle {
+    grid-column: 1 / -1;
+  }
+
+  .optional-label {
+    color: var(--muted);
+    font-size: .7em;
+    font-weight: 600;
+  }
+
   .auth-field {
     gap: .42rem;
   }
@@ -678,6 +680,14 @@
       display: none;
     }
 
+    .auth-name-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .auth-name-middle {
+      grid-column: auto;
+    }
+
     .auth-eyebrow {
       margin-block-end: .5rem;
       font-size: .62rem;
@@ -781,12 +791,25 @@
     border: 2px solid transparent;
     border-radius: inherit;
     background:
-      radial-gradient(circle at var(--button-glow-x) var(--button-glow-y), #fff 0, #38bdf8 24%, transparent 58%) border-box,
-      conic-gradient(from var(--button-glow-angle) at center, transparent 0 24%, #c084fc 39%, #f472b6 50%, #38bdf8 61%, transparent 76%) border-box;
+      radial-gradient(
+        circle at var(--button-glow-x) var(--button-glow-y),
+        #fff 0,
+        color-mix(in srgb, var(--brand) 82%, white) 22%,
+        transparent 58%
+      ) border-box,
+      conic-gradient(
+        from var(--button-glow-angle) at center,
+        transparent 0 25%,
+        color-mix(in srgb, var(--brand) 52%, transparent) 36%,
+        var(--brand) 48%,
+        var(--brand-strong) 56%,
+        color-mix(in srgb, var(--brand) 52%, transparent) 67%,
+        transparent 78%
+      ) border-box;
     opacity: 0;
     filter:
-      drop-shadow(0 0 8px rgb(56 189 248 / 82%))
-      drop-shadow(0 0 16px rgb(192 132 252 / 55%));
+      drop-shadow(0 0 8px color-mix(in srgb, var(--brand) 82%, transparent))
+      drop-shadow(0 0 16px color-mix(in srgb, var(--brand) 48%, transparent));
     pointer-events: none;
     transition: opacity 180ms ease-out;
     -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
@@ -1455,11 +1478,8 @@
   }
 
   .task-card:hover {
-    border-color: color-mix(in srgb, var(--brand) 68%, var(--border));
-    box-shadow:
-      0 0 0 2px color-mix(in srgb, var(--brand) 20%, transparent),
-      0 12px 28px rgb(15 23 42 / 15%),
-      0 0 24px color-mix(in srgb, var(--brand) 24%, transparent);
+    border-color: color-mix(in srgb, var(--brand) 32%, var(--border));
+    box-shadow: 0 10px 22px rgb(15 23 42 / 9%);
     transform: translateY(-2px);
     filter: none;
   }
@@ -2160,32 +2180,6 @@
     block-size: 100%;
     border-radius: inherit;
     background: var(--brand);
-  }
-
-  .task-card::after {
-    content: "";
-    position: absolute;
-    inset-block-start: .32rem;
-    inset-inline-start: .55rem;
-    inline-size: 3.2rem;
-    block-size: 1.35rem;
-    border-radius: 999px;
-    background: linear-gradient(
-      180deg,
-      transparent 0,
-      rgb(255 255 255 / 100%) 44%,
-      color-mix(in srgb, var(--brand) 58%, white) 54%,
-      transparent 100%
-    );
-    opacity: 0;
-    filter: drop-shadow(0 0 9px color-mix(in srgb, var(--brand) 80%, transparent));
-    pointer-events: none;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .task-card:hover::after {
-      animation: priority-scan 1.35s ease-in-out infinite;
-    }
   }
 
   .task-list .task-card:nth-child(2) { animation-delay: 35ms; }
