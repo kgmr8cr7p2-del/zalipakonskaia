@@ -14,13 +14,21 @@ export const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+const taskDateSchema = (requiredMessage = "Укажите дату") => z.string({ required_error: requiredMessage, invalid_type_error: requiredMessage })
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Укажите дату")
+  .refine((value) => {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  }, "Укажите корректную дату");
+
 export const taskSchema = z.object({
-  title: z.string().min(2).max(180),
+  title: z.string().trim().min(2, "Введите название задачи").max(180).transform((value) => value.replace(/\s+/g, " ")),
   description: z.string().max(4000).default(""),
   columnId: z.string().min(1),
   oilDepotId: z.string().optional().nullable(),
   priority: z.nativeEnum(Priority),
-  deadline: z.string().optional().nullable(),
+  startDate: taskDateSchema().optional().nullable(),
+  deadline: taskDateSchema("Укажите дедлайн задачи"),
   assigneeId: z.string().optional().nullable(),
   assigneeIds: z.array(z.string().min(1)).max(30).optional(),
   initialComment: z.string().max(2000).optional().nullable(),

@@ -26,6 +26,7 @@ enum ActivityAction {
   DESCRIPTION_CHANGED
   STATUS_CHANGED
   PRIORITY_CHANGED
+  START_DATE_CHANGED
   DEADLINE_CHANGED
   ASSIGNEE_CHANGED
   COMMENT_ADDED
@@ -124,7 +125,9 @@ model Task {
   id              String           @id @default(cuid())
   taskNumber      Int              @unique @default(autoincrement())
   title           String
+  titleKey        String           @unique
   description     String           @default("")
+  startDate       DateTime         @default(now())
   deadline        DateTime?
   priority        Priority         @default(MEDIUM)
   position        Int              @default(0)

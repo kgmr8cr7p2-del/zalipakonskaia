@@ -112,10 +112,10 @@ export function TaskTimeline({ tasks, onOpen }: TaskTimelineProps) {
 
 function taskSchedule(task: any) {
   const createdAt = startOfDay(task.createdAt ? new Date(task.createdAt) : new Date());
-  if (!task.deadline) return { start: createdAt, end: addDays(createdAt, 2) };
+  const start = startOfDay(task.startDate ? new Date(task.startDate) : createdAt);
+  if (!task.deadline) return { start, end: addDays(start, 1) };
   const end = startOfDay(new Date(task.deadline));
-  const proposedStart = addDays(end, -4);
-  return { start: createdAt > proposedStart ? createdAt : proposedStart, end: end < createdAt ? createdAt : end };
+  return { start, end: end < start ? start : end };
 }
 
 function taskAssignees(task: any) {

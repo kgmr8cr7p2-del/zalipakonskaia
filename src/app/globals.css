@@ -4234,6 +4234,13 @@
     padding: .45rem .8rem;
   }
 
+  .modal-property-help {
+    grid-column: 3;
+    color: var(--muted);
+    font-size: .68rem;
+    line-height: 1.35;
+  }
+
   .task-modal-v2-actions {
     position: sticky;
     inset-block-end: 0;
@@ -4246,6 +4253,19 @@
     border-block-start: 1px solid var(--border);
     background: color-mix(in oklab, var(--panel), transparent 4%);
     padding: 1.45rem 2.25rem;
+  }
+
+  .task-modal-error {
+    flex: 1 0 100%;
+    margin: 0;
+    border: 1px solid color-mix(in srgb, var(--danger) 32%, var(--border));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--danger) 8%, var(--panel));
+    color: var(--danger);
+    padding: .7rem .85rem;
+    font-size: .78rem;
+    font-weight: 750;
+    line-height: 1.4;
   }
 
   .task-modal-v2-form > .task-modal-v2-actions {
@@ -6250,6 +6270,8 @@
       grid-template-columns: 1fr;
       gap: .45rem;
     }
+
+    .modal-property-help { grid-column: 1; }
 
     .property-icon {
       display: none;

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { rm } from "node:fs/promises";
-import { ActivityAction } from "@prisma/client";
+import { ActivityAction, Prisma } from "@prisma/client";
 import { requireVerifiedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { taskInclude, type TaskWithDetails } from "@/lib/board-data";
@@ -12,6 +12,7 @@ import { taskSchema } from "@/lib/validators";
 import { tagConnects } from "@/lib/tags";
 import { triggerTaskCompletionSoundEvent } from "@/lib/task-sound-event";
 import { canAccessTask, getAccessibleColumn } from "@/lib/board-access";
+import { taskTitleKey } from "@/lib/task-title";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -43,11 +44,25 @@ export async function PATCH(request: Request, { params }: Params) {
       if (!targetColumn || targetColumn.boardId !== access.column.boardId) return fail("Нельзя перенести задачу на другую доску", 400);
     }
     if (isPersonalBoard && assigneeIds?.some((userId) => userId !== user.id)) return fail("На личной доске задачу можно назначить только себе", 403);
+    if (input.title && input.title !== existing.title) {
+      const duplicate = await prisma.task.findUnique({ where: { titleKey: taskTitleKey(input.title) }, select: { id: true } });
+      if (duplicate && duplicate.id !== id) return fail("Задача с таким названием уже существует. Укажите другое название.", 409);
+    }
+
+    const nextStartDate = input.startDate === undefined
+      ? existing.startDate
+      : input.startDate
+        ? parseTaskDate(input.startDate)
+        : existing.createdAt;
+    const nextDeadline = input.deadline === undefined ? existing.deadline : parseTaskDate(input.deadline);
+    if (!nextDeadline) return fail("Укажите дедлайн задачи.", 422);
+    if (dateKey(nextDeadline) < dateKey(nextStartDate)) return fail("Дедлайн не может быть раньше даты начала задачи.", 422);
     const changes: ActivityAction[] = [];
     if (input.title && input.title !== existing.title) changes.push(ActivityAction.TITLE_CHANGED);
     if (input.description !== undefined && input.description !== existing.description) changes.push(ActivityAction.DESCRIPTION_CHANGED);
     if (input.priority && input.priority !== existing.priority) changes.push(ActivityAction.PRIORITY_CHANGED);
-    if (input.deadline !== undefined) changes.push(ActivityAction.DEADLINE_CHANGED);
+    if (input.startDate !== undefined && dateKey(nextStartDate) !== dateKey(existing.startDate)) changes.push(ActivityAction.START_DATE_CHANGED);
+    if (input.deadline !== undefined && dateKey(nextDeadline) !== (existing.deadline ? dateKey(existing.deadline) : null)) changes.push(ActivityAction.DEADLINE_CHANGED);
     if (input.columnId && input.columnId !== existing.columnId) changes.push(ActivityAction.STATUS_CHANGED);
     const oilDepotChanged = input.oilDepotId !== undefined && (input.oilDepotId || null) !== existing.oilDepotId;
     if (assigneeIds && !sameIds(assigneeIds, existing.assignees.map((item) => item.userId))) changes.push(ActivityAction.ASSIGNEE_CHANGED);
@@ -58,9 +73,11 @@ export async function PATCH(request: Request, { params }: Params) {
       where: { id },
       data: {
         title: input.title,
+        titleKey: input.title && input.title !== existing.title ? taskTitleKey(input.title) : undefined,
         description: input.description,
         priority: input.priority,
-        deadline: input.deadline === undefined ? undefined : input.deadline ? new Date(input.deadline) : null,
+        startDate: input.startDate === undefined ? undefined : nextStartDate,
+        deadline: input.deadline === undefined ? undefined : nextDeadline,
         columnId: input.columnId,
         oilDepotId: input.oilDepotId === undefined ? undefined : input.oilDepotId || null,
         assigneeId: assigneeIds === undefined ? undefined : assigneeIds[0] || null,
@@ -104,6 +121,7 @@ export async function PATCH(request: Request, { params }: Params) {
     }
     return ok({ task });
   } catch (error) {
+    if (isDuplicateTitleError(error)) return fail("Задача с таким названием уже существует. Укажите другое название.", 409);
     return handleRouteError(error);
   }
 }
@@ -112,6 +130,7 @@ function changeDetails(action: ActivityAction, existing: any, task: TaskWithDeta
   if (action === ActivityAction.TITLE_CHANGED) return { label: "Название", oldValue: existing.title, newValue: task.title };
   if (action === ActivityAction.DESCRIPTION_CHANGED) return { label: "Описание", oldValue: summarize(existing.description), newValue: summarize(task.description) };
   if (action === ActivityAction.PRIORITY_CHANGED) return { label: "Приоритет", oldValue: existing.priority, newValue: task.priority };
+  if (action === ActivityAction.START_DATE_CHANGED) return { label: "Начало работы", oldValue: existing.startDate?.toISOString() ?? null, newValue: task.startDate.toISOString() };
   if (action === ActivityAction.DEADLINE_CHANGED) return { label: "Срок", oldValue: existing.deadline?.toISOString() ?? null, newValue: task.deadline?.toISOString() ?? null };
   if (action === ActivityAction.STATUS_CHANGED) return { previousColumn: existing.column.name, column: task.column.name };
   if (action === ActivityAction.ASSIGNEE_CHANGED) return {
@@ -144,6 +163,18 @@ function sameIds(left: string[], right: string[]) {
   const sortedLeft = [...left].sort();
   const sortedRight = [...right].sort();
   return sortedLeft.length === sortedRight.length && sortedLeft.every((id, index) => id === sortedRight[index]);
+}
+
+function parseTaskDate(value: string) {
+  return new Date(`${value}T00:00:00.000Z`);
+}
+
+function dateKey(value: Date) {
+  return value.toISOString().slice(0, 10);
+}
+
+function isDuplicateTitleError(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
 
 function isCompletedColumn(name: string) {

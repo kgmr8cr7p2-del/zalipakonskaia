@@ -496,6 +496,7 @@ function activityLabel(log: any) {
     DESCRIPTION_CHANGED: "Описание изменено",
     STATUS_CHANGED: "Статус изменен",
     PRIORITY_CHANGED: "Приоритет изменен",
+    START_DATE_CHANGED: "Дата начала изменена",
     DEADLINE_CHANGED: "Срок изменен",
     ASSIGNEE_CHANGED: "Исполнитель изменен",
     COMMENT_ADDED: "Комментарий добавлен",

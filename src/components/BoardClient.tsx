@@ -66,11 +66,13 @@ export function BoardClient({ initialView }: { initialView: View }) {
   }, [createOpen, activeTask?.id, activeTask?.taskNumber]);
 
   function openTask(task: Task) {
+    setError("");
     setCreateOpen(false);
     setSelected(task);
   }
 
   function openCreateTask() {
+    setError("");
     setSelected(null);
     setCreateOpen(true);
   }
@@ -123,6 +125,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
     if (!createOpen && !selected) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
+      setError("");
       setCreateOpen(false);
       setSelected(null);
     };
@@ -465,7 +468,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
             </form>
           ) : null}
         </div>
-        {error ? <p className="chip priority-HIGH" role="alert">{error}</p> : null}
+        {error && !createOpen && !activeTask ? <p className="chip priority-HIGH" role="alert">{error}</p> : null}
         {viewMode === "list" ? <TaskTable tasks={visibleTasks} onOpen={openTask} personal={Boolean(view.board.ownerId)} /> : null}
         {viewMode === "timeline" ? <TaskTimeline tasks={tasks} onOpen={openTask} /> : null}
         <section className={`board ${viewMode === "list" || viewMode === "timeline" ? "is-hidden" : ""}`} aria-label="Канбан-доска">
@@ -520,7 +523,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
             task={activeTask}
             view={view}
             canDelete={view.permissions.canDeleteTask}
-            onClose={() => setSelected(null)}
+            onClose={() => { setError(""); setSelected(null); }}
             onSave={saveTask}
             onArchive={() => setConfirmation("archive")}
             onDelete={() => setConfirmation("delete")}
@@ -529,6 +532,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
             onToggleChecklistItem={toggleChecklistItem}
             onDeleteChecklistItem={deleteChecklistItem}
             onUploadFile={uploadFile}
+            error={error}
           />
           </div>
         </aside>
@@ -536,7 +540,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
       {createOpen ? (
         <aside className="task-drawer-backdrop" aria-label="Создание задачи">
           <div className="task-drawer t-panel-slide" data-open="true" role="dialog" aria-modal="false" aria-labelledby="create-task-title">
-            <CreateTaskDialogV2 view={view} onClose={() => setCreateOpen(false)} onCreate={createTask} />
+            <CreateTaskDialogV2 view={view} error={error} onClose={() => { setError(""); setCreateOpen(false); }} onCreate={createTask} />
           </div>
         </aside>
       ) : null}
@@ -753,8 +757,12 @@ function CreateTaskDialog(props: { view: View; onClose: () => void; onCreate: (f
             </select>
           </label>
           <label className="field">
-            <span className="label">Срок</span>
-            <input className="input" type="date" name="deadline" />
+            <span className="label">Начало работы</span>
+            <input className="input" type="date" name="startDate" title="Если не указать дату, будет использована дата создания задачи" />
+          </label>
+          <label className="field">
+            <span className="label">Дедлайн</span>
+            <input className="input" type="date" name="deadline" required />
           </label>
           {!isPersonalBoard ? <label className="field">
             <span className="label">Исполнитель</span>
@@ -857,8 +865,12 @@ function TaskDialog(props: {
               </select>
             </label>
             <label className="field">
+              <span className="label">Начало работы</span>
+              <input className="input" type="date" name="startDate" defaultValue={String(props.task.startDate ?? props.task.createdAt).slice(0, 10)} />
+            </label>
+            <label className="field">
               <span className="label">Дедлайн</span>
-              <input className="input" type="date" name="deadline" defaultValue={props.task.deadline ? String(props.task.deadline).slice(0, 10) : ""} />
+              <input className="input" type="date" name="deadline" required defaultValue={props.task.deadline ? String(props.task.deadline).slice(0, 10) : ""} />
             </label>
             {!isPersonalBoard ? <label className="field">
               <span className="label">Исполнитель</span>
@@ -1001,7 +1013,7 @@ function TaskDialog(props: {
   );
 }
 
-function CreateTaskDialogV2(props: { view: View; onClose: () => void; onCreate: (formData: FormData) => void }) {
+function CreateTaskDialogV2(props: { view: View; error?: string; onClose: () => void; onCreate: (formData: FormData) => void }) {
   const firstColumn = props.view.board.columns[0];
   const isPersonalBoard = Boolean(props.view.board.ownerId);
   const [checklistItems, setChecklistItems] = useState([""]);
@@ -1125,8 +1137,14 @@ function CreateTaskDialogV2(props: { view: View; onClose: () => void; onCreate: 
               </label>
               <label className="field modal-property-field">
                 <span className="property-icon"><Calendar size={19} /></span>
-                <span className="label">Срок</span>
-                <input className="input" type="date" name="deadline" />
+                <span className="label">Начало работы</span>
+                <input className="input" type="date" name="startDate" title="Если не указать дату, будет использована дата создания задачи" />
+                <small className="modal-property-help">Если пусто — дата создания</small>
+              </label>
+              <label className="field modal-property-field">
+                <span className="property-icon"><Calendar size={19} /></span>
+                <span className="label">Дедлайн</span>
+                <input className="input" type="date" name="deadline" required />
               </label>
               {!isPersonalBoard ? <label className="field modal-property-field">
                 <span className="property-icon"><Building2 size={19} /></span>
@@ -1148,6 +1166,7 @@ function CreateTaskDialogV2(props: { view: View; onClose: () => void; onCreate: 
         </div>
 
         <footer className="task-modal-v2-actions">
+          {props.error ? <p className="task-modal-error" role="alert">{props.error}</p> : null}
           <button className="button secondary" type="button" onClick={props.onClose}>
             Отмена
           </button>
@@ -1174,6 +1193,7 @@ function TaskDialogV2(props: {
   onToggleChecklistItem: (id: string, completed: boolean) => void;
   onDeleteChecklistItem: (id: string) => void;
   onUploadFile: (formData: FormData) => void;
+  error?: string;
 }) {
   const checklist = props.task.checklists[0];
   const checklistStats = checklistProgress(props.task);
@@ -1356,8 +1376,13 @@ function TaskDialogV2(props: {
           </label>
           <label className="field modal-property-field">
             <span className="property-icon"><Calendar size={19} /></span>
-            <span className="label">Срок</span>
-            <input className="input" form={editFormId} type="date" name="deadline" defaultValue={props.task.deadline ? String(props.task.deadline).slice(0, 10) : ""} />
+            <span className="label">Начало работы</span>
+            <input className="input" form={editFormId} type="date" name="startDate" defaultValue={String(props.task.startDate ?? props.task.createdAt).slice(0, 10)} />
+          </label>
+          <label className="field modal-property-field">
+            <span className="property-icon"><Calendar size={19} /></span>
+            <span className="label">Дедлайн</span>
+            <input className="input" form={editFormId} type="date" name="deadline" required defaultValue={props.task.deadline ? String(props.task.deadline).slice(0, 10) : ""} />
           </label>
           {!isPersonalBoard ? <label className="field modal-property-field">
             <span className="property-icon"><Building2 size={19} /></span>
@@ -1378,6 +1403,7 @@ function TaskDialogV2(props: {
       </div>
 
       <footer className="task-modal-v2-actions">
+        {props.error ? <p className="task-modal-error" role="alert">{props.error}</p> : null}
         <button className="button secondary" type="button" onClick={props.onClose}>
           Отмена
         </button>
@@ -1409,6 +1435,7 @@ function taskPayload(formData: FormData) {
     columnId: String(formData.get("columnId") ?? ""),
     oilDepotId: String(formData.get("oilDepotId") ?? ""),
     priority: String(formData.get("priority") ?? "MEDIUM"),
+    startDate: String(formData.get("startDate") ?? "") || null,
     deadline: String(formData.get("deadline") ?? "") || null,
     assigneeId: String(formData.get("assigneeId") ?? "") || null,
     assigneeIds: formData.getAll("assigneeIds").map((value) => String(value)).filter(Boolean),
@@ -1601,6 +1628,7 @@ function activityLabel(action: string) {
     DESCRIPTION_CHANGED: "Описание изменено",
     STATUS_CHANGED: "Статус изменён",
     PRIORITY_CHANGED: "Приоритет изменён",
+    START_DATE_CHANGED: "Дата начала изменена",
     DEADLINE_CHANGED: "Дедлайн изменён",
     ASSIGNEE_CHANGED: "Исполнитель изменён",
     COMMENT_ADDED: "Комментарий добавлен",

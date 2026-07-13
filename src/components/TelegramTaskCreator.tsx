@@ -49,6 +49,7 @@ export function TelegramTaskCreator({ canCreate, data }: { canCreate: boolean; d
           columnId: String(values.get("columnId") ?? ""),
           oilDepotId: String(values.get("oilDepotId") ?? "") || null,
           priority: String(values.get("priority") ?? "MEDIUM"),
+          startDate: String(values.get("startDate") ?? "") || null,
           deadline: String(values.get("deadline") ?? "") || null,
           assigneeId: String(values.get("assigneeId") ?? "") || null,
           initialComment: String(values.get("initialComment") ?? "") || null,
@@ -141,8 +142,13 @@ export function TelegramTaskCreator({ canCreate, data }: { canCreate: boolean; d
             </select>
           </label>
           <label className="field">
-            <span className="label">Срок</span>
-            <input className="input" name="deadline" type="date" />
+            <span className="label">Начало работы</span>
+            <input className="input" name="startDate" type="date" title="Если не указать дату, будет использована дата создания задачи" />
+            <small>Если не указать, будет использована дата создания задачи.</small>
+          </label>
+          <label className="field">
+            <span className="label">Дедлайн</span>
+            <input className="input" name="deadline" type="date" required />
           </label>
           <label className="field">
             <span className="label">Описание</span>

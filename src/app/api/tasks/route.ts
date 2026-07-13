@@ -1,4 +1,4 @@
-import { ActivityAction } from "@prisma/client";
+import { ActivityAction, Prisma } from "@prisma/client";
 import { requireVerifiedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { taskInclude } from "@/lib/board-data";
@@ -10,6 +10,7 @@ import { taskSchema } from "@/lib/validators";
 import { tagConnects } from "@/lib/tags";
 import { triggerTaskSoundEvent } from "@/lib/task-sound-event";
 import { getAccessibleColumn } from "@/lib/board-access";
+import { taskTitleKey } from "@/lib/task-title";
 
 const priorityLabels = {
   LOW: "Низкая",
@@ -28,6 +29,14 @@ export async function POST(request: Request) {
     const isPersonalBoard = targetColumn.board.ownerId === user.id;
     if (!isPersonalBoard && !canCreateTask(user)) return fail("Недостаточно прав для создания задачи", 403);
     if (isPersonalBoard && assigneeIds.some((id) => id !== user.id)) return fail("На личной доске задачу можно назначить только себе", 403);
+    const titleKey = taskTitleKey(input.title);
+    const duplicate = await prisma.task.findUnique({ where: { titleKey }, select: { id: true } });
+    if (duplicate) return fail("Задача с таким названием уже существует. Укажите другое название.", 409);
+
+    const createdAt = new Date();
+    const startDate = input.startDate ? parseTaskDate(input.startDate) : createdAt;
+    const deadline = parseTaskDate(input.deadline);
+    if (dateKey(deadline) < dateKey(startDate)) return fail("Дедлайн не может быть раньше даты начала задачи.", 422);
     const maxPosition = await prisma.task.aggregate({
       where: { columnId: input.columnId },
       _max: { position: true },
@@ -36,9 +45,12 @@ export async function POST(request: Request) {
     const task = await prisma.task.create({
       data: {
         title: input.title,
+        titleKey,
         description: input.description,
         priority: input.priority,
-        deadline: input.deadline ? new Date(input.deadline) : null,
+        startDate,
+        deadline,
+        createdAt,
         columnId: input.columnId,
         oilDepotId: input.oilDepotId || null,
         authorId: user.id,
@@ -92,11 +104,13 @@ export async function POST(request: Request) {
     }
     return ok({ task: taskWithDetails });
   } catch (error) {
+    if (isDuplicateTitleError(error)) return fail("Задача с таким названием уже существует. Укажите другое название.", 409);
     return handleRouteError(error);
   }
 }
 
 function formatTaskCreatedMessage(task: Awaited<ReturnType<typeof prisma.task.findUniqueOrThrow>>, user: { name: string; email: string }, comment?: string) {
+  const startDate = new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium" }).format((task as any).startDate);
   const deadline = task.deadline ? new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium" }).format(task.deadline) : "не указан";
   const oilDepotName = (task as any).oilDepot?.name ?? "не указана";
   const assignees = (task as any).assignees?.map((item: any) => item.user.name).join(", ") || "не назначены";
@@ -107,7 +121,20 @@ function formatTaskCreatedMessage(task: Awaited<ReturnType<typeof prisma.task.fi
     `Исполнители: ${assignees}`,
     `Создал: ${user.name} (${user.email})`,
     `Важность: ${priorityLabels[task.priority as keyof typeof priorityLabels]}`,
+    `Начало: ${startDate}`,
     `Срок: ${deadline}`,
     `Комментарий: ${comment?.trim() || "нет"}`,
   ].join("\n");
+}
+
+function parseTaskDate(value: string) {
+  return new Date(`${value}T00:00:00.000Z`);
+}
+
+function dateKey(value: Date) {
+  return value.toISOString().slice(0, 10);
+}
+
+function isDuplicateTitleError(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
