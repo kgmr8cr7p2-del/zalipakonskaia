@@ -19,7 +19,6 @@ export function TaskTimeline({ tasks, onOpen }: TaskTimelineProps) {
   const rangeEnd = addDays(rangeStart, daysCount);
 
   const monthLabel = new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric" }).format(rangeStart);
-  const todayIndex = differenceInDays(startOfDay(new Date()), rangeStart);
 
   return (
     <section className="task-timeline" aria-label="Таймлайн задач">
@@ -82,7 +81,6 @@ export function TaskTimeline({ tasks, onOpen }: TaskTimelineProps) {
                 </button>
                 <div className="task-timeline-canvas">
                   {days.map((day) => <span className={`task-timeline-cell ${sameDay(day, new Date()) ? "is-today" : ""} ${[0, 6].includes(day.getDay()) ? "is-weekend" : ""}`} key={day.toISOString()} />)}
-                  {todayIndex >= 0 && todayIndex < daysCount ? <span className="task-timeline-today-line" style={{ left: `calc((${todayIndex} + .5) * var(--timeline-day-width))` }} /> : null}
                   {!isOutside ? (
                     <button
                       className={`task-timeline-bar priority-${task.priority}`}

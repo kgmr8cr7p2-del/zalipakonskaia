@@ -3061,6 +3061,8 @@
   .task-timeline-date strong { color: var(--text); font-size: .78rem; }
   .task-timeline-date.is-weekend,
   .task-timeline-cell.is-weekend { background: color-mix(in srgb, var(--panel-2) 68%, transparent); }
+  .task-timeline-date.is-today,
+  .task-timeline-cell.is-today { background: color-mix(in srgb, var(--brand) 7%, var(--panel)); }
   .task-timeline-date.is-today strong { color: var(--brand); }
 
   .task-timeline-label {
@@ -3101,27 +3103,6 @@
   }
 
   .task-timeline-cell { border-inline-start: 1px solid color-mix(in srgb, var(--border) 68%, transparent); }
-  .task-timeline-today-line {
-    position: absolute;
-    z-index: 2;
-    inset-block: 0;
-    inline-size: 2px;
-    background: var(--brand);
-    pointer-events: none;
-  }
-
-  .task-timeline-today-line::before {
-    position: absolute;
-    inset-block-start: -.2rem;
-    inset-inline-start: 50%;
-    inline-size: .42rem;
-    block-size: .42rem;
-    border-radius: 50%;
-    background: var(--brand);
-    content: "";
-    transform: translateX(-50%);
-  }
-
   .task-timeline-bar {
     position: absolute;
     z-index: 3;
