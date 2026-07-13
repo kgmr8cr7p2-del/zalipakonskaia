@@ -1,10 +1,11 @@
 "use client";
 
 import { Archive, Building2, Calendar, CheckSquare, Columns3, Download, Expand, Flag, ListChecks, Minimize2, MessageSquare, Monitor, Paperclip, Plus, Save, Search, Send, Trash2, UploadCloud, UserRound, X } from "lucide-react";
-import { type DragEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type DragEvent, type FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { CreateTaskPawButton } from "@/components/CreateTaskPawButton";
 import { UserProfileButton } from "@/components/ProfileCard/ProfileCard";
+import { setPresenceActivity } from "@/lib/presence";
 
 const priorityLabels = {
   LOW: "Низкий",
@@ -52,6 +53,13 @@ export function BoardClient({ initialView }: { initialView: View }) {
   useEffect(() => {
     filtersRef.current = filters;
   }, [filters]);
+
+  useEffect(() => {
+    if (createOpen) setPresenceActivity("Создаёт новую задачу");
+    else if (activeTask) setPresenceActivity(`Работает с задачей #${activeTask.taskNumber}`);
+    else setPresenceActivity(null);
+    return () => setPresenceActivity(null);
+  }, [createOpen, activeTask?.id, activeTask?.taskNumber]);
 
   function openTask(task: Task) {
     setCreateOpen(false);
@@ -288,6 +296,17 @@ export function BoardClient({ initialView }: { initialView: View }) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ completed }),
     });
+    await refresh();
+  }
+
+  async function deleteChecklistItem(id: string) {
+    setError("");
+    const response = await fetch(`/api/checklist-items/${id}`, { method: "DELETE" });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      setError(data.error ?? "Не удалось удалить пункт чек-листа");
+      return;
+    }
     await refresh();
   }
 
@@ -533,6 +552,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
             onAddComment={addComment}
             onAddChecklistItem={addChecklistItem}
             onToggleChecklistItem={toggleChecklistItem}
+            onDeleteChecklistItem={deleteChecklistItem}
             onUploadFile={uploadFile}
           />
           </div>
@@ -798,6 +818,7 @@ function TaskDialog(props: {
   onAddComment: (formData: FormData) => void;
   onAddChecklistItem: (formData: FormData) => void;
   onToggleChecklistItem: (id: string, completed: boolean) => void;
+  onDeleteChecklistItem: (id: string) => void;
   onUploadFile: (formData: FormData) => void;
 }) {
   const checklist = props.task.checklists[0];
@@ -938,10 +959,21 @@ function TaskDialog(props: {
           <div className="list">
             {checklist?.items?.length ? (
               checklist.items.map((item: any) => (
-                <label className="line-item" key={item.id}>
-                  <input type="checkbox" defaultChecked={item.completed} onChange={(event) => props.onToggleChecklistItem(item.id, event.target.checked)} />
-                  <span>{item.text}</span>
-                </label>
+                <div className="line-item checklist-line-item" key={item.id}>
+                  <label className="checklist-toggle">
+                    <input type="checkbox" defaultChecked={item.completed} onChange={(event) => props.onToggleChecklistItem(item.id, event.target.checked)} />
+                    <span>{item.text}</span>
+                  </label>
+                  <button
+                    className="button icon secondary checklist-delete"
+                    type="button"
+                    title="Удалить пункт"
+                    aria-label={`Удалить пункт «${item.text}»`}
+                    onClick={() => props.onDeleteChecklistItem(item.id)}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
               ))
             ) : (
               <p className="muted">Пунктов пока нет.</p>
@@ -1165,6 +1197,7 @@ function TaskDialogV2(props: {
   onAddComment: (formData: FormData) => void;
   onAddChecklistItem: (formData: FormData) => void;
   onToggleChecklistItem: (id: string, completed: boolean) => void;
+  onDeleteChecklistItem: (id: string) => void;
   onUploadFile: (formData: FormData) => void;
 }) {
   const checklist = props.task.checklists[0];
@@ -1263,10 +1296,21 @@ function TaskDialogV2(props: {
           <div className="modal-checklist-list">
             {checklist?.items?.length ? (
               checklist.items.map((item: any) => (
-                <label className="line-item" key={item.id}>
-                  <input type="checkbox" defaultChecked={item.completed} onChange={(event) => props.onToggleChecklistItem(item.id, event.target.checked)} />
-                  <span>{item.text}</span>
-                </label>
+                <div className="line-item checklist-line-item" key={item.id}>
+                  <label className="checklist-toggle">
+                    <input type="checkbox" defaultChecked={item.completed} onChange={(event) => props.onToggleChecklistItem(item.id, event.target.checked)} />
+                    <span>{item.text}</span>
+                  </label>
+                  <button
+                    className="button icon secondary checklist-delete"
+                    type="button"
+                    title="Удалить пункт"
+                    aria-label={`Удалить пункт «${item.text}»`}
+                    onClick={() => props.onDeleteChecklistItem(item.id)}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
               ))
             ) : (
               <p className="muted">Пунктов пока нет.</p>
@@ -1353,7 +1397,7 @@ function TaskDialogV2(props: {
               ))}
             </select>
           </label> : null}
-          {!isPersonalBoard ? <AssigneePicker users={props.view.users} defaultIds={taskAssigneeUsers(props.task).map((user: any) => user.id)} formId={editFormId} /> : null}
+          {!isPersonalBoard ? <AssigneePicker key={`assignees-${props.task.id}`} users={props.view.users} defaultIds={taskAssigneeUsers(props.task).map((user: any) => user.id)} formId={editFormId} /> : null}
         </div>
       </aside>
       </div>
@@ -1411,19 +1455,50 @@ function taskPayload(formData: FormData) {
 }
 
 function AssigneePicker({ users, defaultIds = [], formId }: { users: any[]; defaultIds?: string[]; formId?: string }) {
+  const pickerId = useId();
+  const labelId = `${pickerId}-label`;
+  const [selectedIds, setSelectedIds] = useState(() => [...new Set(defaultIds)]);
+  const selectedUsers = users.filter((user) => selectedIds.includes(user.id));
+  const summary = selectedUsers.length ? selectedUsers.map((user) => user.name).join(", ") : "Не выбраны";
+
   return (
-    <fieldset className="field modal-property-field assignee-picker">
-      <legend className="label"><span className="property-icon"><UserRound size={19} /></span>Исполнители</legend>
-      <div className="assignee-picker-list">
-        {users.map((user) => (
-          <label className="assignee-option" key={user.id}>
-            <input type="checkbox" form={formId} name="assigneeIds" value={user.id} defaultChecked={defaultIds.includes(user.id)} />
-            <span>{user.name}</span>
-          </label>
-        ))}
-      </div>
-      <small>Можно выбрать несколько</small>
-    </fieldset>
+    <div className="field modal-property-field assignee-picker" role="group" aria-labelledby={labelId}>
+      <span className="property-icon"><UserRound size={19} /></span>
+      <span className="label" id={labelId}>Исполнители</span>
+      <details className="assignee-select">
+        <summary>
+          <span className="assignee-summary-value">{summary}</span>
+          <span className="assignee-picker-count" aria-label={`Выбрано: ${selectedIds.length}`}>{selectedIds.length}</span>
+        </summary>
+        <div className="assignee-picker-list">
+          {users.map((user) => {
+            const inputId = `${pickerId}-${user.id}`;
+            return (
+              <label className="assignee-option" htmlFor={inputId} key={user.id}>
+                <input
+                  id={inputId}
+                  type="checkbox"
+                  form={formId}
+                  name="assigneeIds"
+                  value={user.id}
+                  checked={selectedIds.includes(user.id)}
+                  onChange={(event) => {
+                    setSelectedIds((current) => event.currentTarget.checked
+                      ? [...current, user.id]
+                      : current.filter((id) => id !== user.id));
+                  }}
+                />
+                <span className="assignee-option-copy">
+                  <strong>{user.name}</strong>
+                  <small>{user.email}</small>
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </details>
+      <small>Можно выбрать одного или нескольких исполнителей</small>
+    </div>
   );
 }
 

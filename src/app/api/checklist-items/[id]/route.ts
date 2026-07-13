@@ -14,7 +14,7 @@ export async function PATCH(request: Request, { params }: Params) {
     const { id } = await params;
     const existing = await prisma.checklistItem.findUnique({
       where: { id },
-      include: { checklist: { include: { task: true } } },
+      include: { checklist: { include: { task: { include: { assignees: { select: { userId: true } } } } } } },
     });
     if (!existing) return fail("Пункт не найден", 404);
     const access = await canAccessTask(user.id, existing.checklist.taskId);
@@ -46,7 +46,7 @@ export async function DELETE(_: Request, { params }: Params) {
     const { id } = await params;
     const existing = await prisma.checklistItem.findUnique({
       where: { id },
-      include: { checklist: { include: { task: true } } },
+      include: { checklist: { include: { task: { include: { assignees: { select: { userId: true } } } } } } },
     });
     if (!existing) return fail("Пункт не найден", 404);
     const access = await canAccessTask(user.id, existing.checklist.taskId);

@@ -17,9 +17,11 @@ export function canCreateTask(user: CurrentUser) {
   return isAdmin(user) || isManager(user);
 }
 
-export function canEditTask(user: CurrentUser, task?: Pick<Task, "assigneeId"> | null) {
+type TaskWithAssignees = Pick<Task, "assigneeId"> & { assignees?: Array<{ userId: string }> };
+
+export function canEditTask(user: CurrentUser, task?: TaskWithAssignees | null) {
   if (isAdmin(user) || isManager(user)) return true;
-  return Boolean(task?.assigneeId && task.assigneeId === user.id);
+  return Boolean(task && (task.assigneeId === user.id || task.assignees?.some((assignment) => assignment.userId === user.id)));
 }
 
 export function canDeleteTask(user: CurrentUser) {

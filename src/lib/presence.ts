@@ -4,6 +4,12 @@ export type PresenceSource = {
 };
 
 const ONLINE_WINDOW_MS = 70_000;
+export const PRESENCE_ACTIVITY_EVENT = "presenceactivity";
+
+export function setPresenceActivity(activity?: string | null) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(PRESENCE_ACTIVITY_EVENT, { detail: activity?.trim() || null }));
+}
 
 export function presenceLabel(user: PresenceSource, now = Date.now()) {
   const lastActive = user.lastActiveAt ? new Date(user.lastActiveAt).getTime() : 0;

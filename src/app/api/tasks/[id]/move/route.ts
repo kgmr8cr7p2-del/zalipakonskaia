@@ -23,7 +23,7 @@ export async function POST(request: Request, { params }: Params) {
     const destinationColumn = await getAccessibleColumn(user.id, columnId);
     if (!destinationColumn) return fail("Колонка не найдена", 404);
     if (destinationColumn.boardId !== access.column.boardId) return fail("Нельзя перенести задачу на другую доску", 400);
-    const existing = await prisma.task.findUnique({ where: { id }, include: { column: { select: { name: true } } } });
+    const existing = await prisma.task.findUnique({ where: { id }, include: { column: { select: { name: true } }, assignees: { select: { userId: true } } } });
     if (!existing) return fail("Задача не найдена", 404);
     const isPersonalBoard = access.column.board.ownerId === user.id;
     if (!isPersonalBoard && !canEditTask(user, existing)) return fail("Недостаточно прав", 403);

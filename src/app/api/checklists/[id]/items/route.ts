@@ -13,7 +13,7 @@ export async function POST(request: Request, { params }: Params) {
   try {
     const user = await requireVerifiedUser();
     const { id } = await params;
-    const checklist = await prisma.checklist.findUnique({ where: { id }, include: { task: true } });
+    const checklist = await prisma.checklist.findUnique({ where: { id }, include: { task: { include: { assignees: { select: { userId: true } } } } } });
     if (!checklist) return fail("Чек-лист не найден", 404);
     const access = await canAccessTask(user.id, checklist.taskId);
     if (!access) return fail("Чек-лист не найден", 404);
