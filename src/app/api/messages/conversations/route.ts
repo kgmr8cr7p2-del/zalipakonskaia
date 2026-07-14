@@ -7,7 +7,7 @@ export async function GET() {
     const viewer = await requireVerifiedUser();
     const [users, messages] = await Promise.all([
       prisma.user.findMany({
-        where: { id: { not: viewer.id }, emailVerifiedAt: { not: null } },
+        where: { id: { not: viewer.id }, emailVerifiedAt: { not: null }, approvedAt: { not: null } },
         orderBy: { name: "asc" },
         select: {
           id: true,

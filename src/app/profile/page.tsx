@@ -1,9 +1,9 @@
 import { AppShell } from "@/components/AppShell";
 import { ProfileForm } from "@/components/ProfileForm";
-import { requireVerifiedUser } from "@/lib/auth";
+import { requireAccountUser } from "@/lib/auth";
 
 export default async function ProfilePage() {
-  const user = await requireVerifiedUser();
+  const user = await requireAccountUser();
 
   return (
     <AppShell user={user}>

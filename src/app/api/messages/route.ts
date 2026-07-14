@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     const user = await requireVerifiedUser();
     const targetId = new URL(request.url).searchParams.get("userId")?.trim();
     if (!targetId || targetId === user.id) return fail("Собеседник не выбран", 422);
-    const target = await prisma.user.findUnique({ where: { id: targetId }, select: { id: true } });
+    const target = await prisma.user.findFirst({ where: { id: targetId, approvedAt: { not: null } }, select: { id: true } });
     if (!target) return fail("Пользователь не найден", 404);
 
     await prisma.directMessage.updateMany({
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     if (!text && !file) return fail("Напишите сообщение или прикрепите файл", 422);
     if (text.length > 4000) return fail("Сообщение не должно превышать 4000 символов", 422);
     if (file && file.size > MAX_FILE_BYTES) return fail("Файл не должен превышать 15 МБ", 422);
-    const target = await prisma.user.findUnique({ where: { id: targetId }, select: { id: true } });
+    const target = await prisma.user.findFirst({ where: { id: targetId, approvedAt: { not: null } }, select: { id: true } });
     if (!target) return fail("Пользователь не найден", 404);
 
     const message = await prisma.directMessage.create({

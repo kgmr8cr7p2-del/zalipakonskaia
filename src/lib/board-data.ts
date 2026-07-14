@@ -75,7 +75,7 @@ export async function getBoardView(user: CurrentUser, filters?: URLSearchParams)
   if (!board) return null;
 
   const users = await prisma.user.findMany({
-    where: board.ownerId ? { id: user.id } : undefined,
+    where: board.ownerId ? { id: user.id, approvedAt: { not: null } } : { approvedAt: { not: null } },
     include: { role: true, telegramConnection: true },
     orderBy: { name: "asc" },
   });
@@ -208,6 +208,7 @@ export async function getActivityHistory(filters?: URLSearchParams) {
 export async function getHistoryFilterOptions() {
   const [users, oilDepots] = await Promise.all([
     prisma.user.findMany({
+      where: { approvedAt: { not: null } },
       orderBy: [{ name: "asc" }, { email: "asc" }],
       select: { id: true, name: true, email: true },
     }),

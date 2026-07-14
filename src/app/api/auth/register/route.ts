@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       middleName: input.middleName,
       passwordHash: await hashPassword(input.password),
       roleId: role.id,
+      approvedAt: null,
     };
     const user = exists
       ? await prisma.user.update({ where: { id: exists.id }, data: accountData })

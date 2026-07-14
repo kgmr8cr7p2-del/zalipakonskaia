@@ -1,6 +1,7 @@
 import { randomInt } from "node:crypto";
 import { NextResponse } from "next/server";
 import jokesData from "@/data/tv-jokes.json";
+import { requireVerifiedUser } from "@/lib/auth";
 
 type JokeItem = { id: number; text: string };
 
@@ -11,6 +12,7 @@ const jokes = (jokesData as JokeItem[]).filter(
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  await requireVerifiedUser();
   if (!jokes.length) {
     return NextResponse.json({ error: "База шуток пуста" }, { status: 503 });
   }

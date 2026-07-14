@@ -22,15 +22,20 @@ const links = [
 
 export function AppNav({ user }: { user: CurrentUser }) {
   const pathname = usePathname();
+  const hasAccess = Boolean(user.approvedAt);
   const [unreadChats, setUnreadChats] = useState(0);
   const [profile, setProfile] = useState({ name: user.name, jobTitle: user.jobTitle, avatarUrl: user.avatarUrl });
-  const visibleLinks = user.role.name === "ADMIN" ? [...links, { href: "/admin", label: "Админ", icon: Shield }] : links;
+  const accountLinks = links.filter(({ href }) => href === "/profile");
+  const visibleLinks = hasAccess
+    ? user.role.name === "ADMIN" ? [...links, { href: "/admin", label: "Админ", icon: Shield }] : links
+    : accountLinks;
   const desktopLinks = visibleLinks.filter(({ href }) => href !== "/profile");
   const primaryMobileLinks = visibleLinks.filter(({ href }) => ["/board", "/chats", "/reports", "/profile"].includes(href));
   const secondaryMobileLinks = visibleLinks.filter(({ href }) => !primaryMobileLinks.some((item) => item.href === href));
   const secondaryActive = secondaryMobileLinks.some(({ href }) => pathname === href);
 
   useEffect(() => {
+    if (!hasAccess) return;
     let active = true;
     async function refreshUnread() {
       const response = await fetch("/api/messages/conversations", { cache: "no-store" });
@@ -43,7 +48,7 @@ export function AppNav({ user }: { user: CurrentUser }) {
       active = false;
       window.clearInterval(timer);
     };
-  }, [pathname]);
+  }, [hasAccess, pathname]);
 
   useEffect(() => {
     setProfile({ name: user.name, jobTitle: user.jobTitle, avatarUrl: user.avatarUrl });

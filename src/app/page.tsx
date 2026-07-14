@@ -3,5 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
-  redirect(user ? "/board" : "/login");
+  if (!user) redirect("/login");
+  if (!user.emailVerifiedAt) redirect("/verify-email?reason=unverified");
+  redirect(user.approvedAt ? "/board" : "/pending-approval");
 }

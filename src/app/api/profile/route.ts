@@ -1,4 +1,4 @@
-import { requireVerifiedUser } from "@/lib/auth";
+import { requireAccountUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { handleRouteError, ok } from "@/lib/http";
 import { profileSchema } from "@/lib/validators";
@@ -6,7 +6,7 @@ import { formatUserName } from "@/lib/user-name";
 
 export async function PATCH(request: Request) {
   try {
-    const user = await requireVerifiedUser();
+    const user = await requireAccountUser();
     const input = profileSchema.parse(await request.json());
     const profile = await prisma.user.update({
       where: { id: user.id },

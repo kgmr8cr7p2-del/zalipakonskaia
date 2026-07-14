@@ -1,6 +1,6 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
-import { requireVerifiedUser } from "@/lib/auth";
+import { requireAccountUser } from "@/lib/auth";
 import { fail } from "@/lib/http";
 
 type Params = { params: Promise<{ userId: string; fileName: string }> };
@@ -14,8 +14,9 @@ const contentTypes: Record<string, string> = {
 };
 
 export async function GET(_: Request, { params }: Params) {
-  await requireVerifiedUser();
+  const viewer = await requireAccountUser();
   const { userId, fileName } = await params;
+  if (!viewer.approvedAt && viewer.id !== userId) return fail("Аватар не найден", 404);
   const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, "");
   const safeFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "");
   if (!safeUserId || !safeFileName || safeUserId !== userId || safeFileName !== fileName) return fail("Аватар не найден", 404);

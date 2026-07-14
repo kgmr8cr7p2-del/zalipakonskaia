@@ -33,14 +33,14 @@ export async function POST(request: Request) {
       return fail(`Неверный код. Осталось попыток: ${AUTH_CODE_MAX_ATTEMPTS - attempts}.`, 422);
     }
 
-    await prisma.$transaction([
+    const [verifiedUser] = await prisma.$transaction([
       prisma.user.update({ where: { id: user.id }, data: { emailVerifiedAt: new Date() } }),
       prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } }),
       prisma.userInvite.updateMany({ where: { email: user.email }, data: { acceptedAt: new Date() } }),
     ]);
     await createSession(user.id);
     await notifyTelegram("account_registered", `Пользователь: ${user.name}\nПочта: ${user.email}`);
-    return ok({ ok: true, verified: true });
+    return ok({ ok: true, verified: true, approved: Boolean(verifiedUser.approvedAt) });
   } catch (error) {
     return handleRouteError(error);
   }

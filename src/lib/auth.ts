@@ -62,9 +62,15 @@ export async function requireUser() {
   return user;
 }
 
-export async function requireVerifiedUser() {
+export async function requireAccountUser() {
   const user = await requireUser();
   if (!user.emailVerifiedAt) redirect("/verify-email?reason=unverified");
+  return user;
+}
+
+export async function requireVerifiedUser() {
+  const user = await requireAccountUser();
+  if (!user.approvedAt) redirect("/pending-approval");
   return user;
 }
 

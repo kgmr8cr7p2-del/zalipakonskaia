@@ -1,6 +1,6 @@
 import path from "node:path";
 import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
-import { requireVerifiedUser } from "@/lib/auth";
+import { requireAccountUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { fail, handleRouteError, ok } from "@/lib/http";
 
@@ -14,7 +14,7 @@ const extensions: Record<string, string> = {
 
 export async function POST(request: Request) {
   try {
-    const user = await requireVerifiedUser();
+    const user = await requireAccountUser();
     const formData = await request.formData();
     const file = formData.get("avatar");
     if (!(file instanceof File)) return fail("Выберите изображение", 422);
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   try {
-    const user = await requireVerifiedUser();
+    const user = await requireAccountUser();
     await prisma.user.update({ where: { id: user.id }, data: { avatarUrl: null } });
     await rm(path.join(process.cwd(), "uploads", "profiles", user.id), { recursive: true, force: true }).catch(() => undefined);
     return ok({ avatarUrl: null });

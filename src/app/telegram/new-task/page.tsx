@@ -1,13 +1,11 @@
 import Script from "next/script";
 import { redirect } from "next/navigation";
 import { TelegramTaskCreator } from "@/components/TelegramTaskCreator";
-import { getCurrentUser } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { getBoardView } from "@/lib/board-data";
 
 export default async function TelegramNewTaskPage() {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/telegram/new-task");
-  if (!user.emailVerifiedAt) redirect("/verify-email?reason=unverified");
+  const user = await requireVerifiedUser();
 
   const view = await getBoardView(user);
   if (!view) redirect("/board");

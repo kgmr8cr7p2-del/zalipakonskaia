@@ -53,7 +53,7 @@ export async function sendWeeklyReportMessage(message: string) {
   if (!token) return { sent: 0, failed: 0, reason: "token_missing" as const };
 
   const connections = await prisma.telegramConnection.findMany({
-    where: { enabled: true },
+    where: { enabled: true, user: { approvedAt: { not: null } } },
   });
 
   const chatIds = new Set([
@@ -88,7 +88,9 @@ export async function sendSharedTaskReminder(message: string) {
 export async function sendPersonalTaskReminder(userId: string, message: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return { sent: 0, failed: 0, reason: "token_missing" as const };
-  const connection = await prisma.telegramConnection.findUnique({ where: { userId } });
+  const connection = await prisma.telegramConnection.findFirst({
+    where: { userId, enabled: true, user: { approvedAt: { not: null } } },
+  });
   if (!connection?.enabled) return { sent: 0, failed: 0, reason: "chat_missing" as const };
   return sendToChats(token, [connection.chatId], formatTelegramMessage("deadline_reminder", message), "Telegram personal reminder failed");
 }
@@ -99,7 +101,7 @@ export async function notifyTelegram(event: TelegramEvent, message: string, user
 
   const connections = userIds.length
     ? await prisma.telegramConnection.findMany({
-        where: { enabled: true, userId: { in: userIds } },
+        where: { enabled: true, userId: { in: userIds }, user: { approvedAt: { not: null } } },
       })
     : [];
 

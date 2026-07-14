@@ -30,6 +30,8 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
       if (data.verified === false) {
         const email = String(data.email ?? payload.email ?? "");
         router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      } else if (data.approved === false) {
+        router.push("/pending-approval");
       } else {
         router.push(safeNext);
       }

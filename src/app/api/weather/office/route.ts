@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireVerifiedUser } from "@/lib/auth";
 
 const OFFICE = {
   name: "Санкт-Петербург",
@@ -39,6 +40,7 @@ const weatherLabels: Record<number, string> = {
 };
 
 export async function GET() {
+  await requireVerifiedUser();
   const url = new URL("https://api.open-meteo.com/v1/forecast");
   url.searchParams.set("latitude", String(OFFICE.latitude));
   url.searchParams.set("longitude", String(OFFICE.longitude));

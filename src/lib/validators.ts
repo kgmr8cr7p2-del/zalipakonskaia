@@ -89,9 +89,10 @@ export const profileSchema = z.object({
   telegramChatId: z.string().max(80).optional(),
 });
 
-export const userRoleSchema = z.object({
-  role: z.nativeEnum(RoleName),
-});
+export const userAdminUpdateSchema = z.object({
+  role: z.nativeEnum(RoleName).optional(),
+  approved: z.boolean().optional(),
+}).refine((input) => input.role !== undefined || input.approved !== undefined, "Нет изменений для сохранения");
 
 export const userInviteSchema = z.object({
   email: z.string().email("Введите корректную почту").transform((value) => value.toLowerCase()),

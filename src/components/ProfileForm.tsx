@@ -7,7 +7,6 @@ import ProfileCard, { type ProfileUser, ProfileAvatar } from "@/components/Profi
 import { presenceLabel } from "@/lib/presence";
 import { formatUserName } from "@/lib/user-name";
 
-const TELEGRAM_INVITE_URL = "https://t.me/+V1kH1F871nc5MTUy";
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
 type Crop = { zoom: number; x: number; y: number };
@@ -290,7 +289,6 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
 
         <p className="profile-auto-status"><i aria-hidden="true" />Статус меняется автоматически: сейчас — <strong>{liveStatus}</strong>.</p>
         <div className="profile-form-footer">
-          <a className="button secondary profile-chat-link" href={TELEGRAM_INVITE_URL} target="_blank" rel="noreferrer">Рабочий Telegram-чат</a>
           <button className="button" disabled={status === "saving"}>
             <Save size={17} aria-hidden="true" /> {status === "saving" ? "Сохраняем…" : "Сохранить профиль"}
           </button>

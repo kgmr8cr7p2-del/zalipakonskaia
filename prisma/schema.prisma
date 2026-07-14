@@ -59,6 +59,7 @@ model User {
   email               String                   @unique
   passwordHash        String
   emailVerifiedAt     DateTime?
+  approvedAt          DateTime?
   roleId              String
   role                Role                     @relation(fields: [roleId], references: [id])
   createdAt           DateTime                 @default(now())

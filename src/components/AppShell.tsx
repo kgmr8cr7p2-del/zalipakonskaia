@@ -19,10 +19,14 @@ export function AppShell({ user, children }: { user: CurrentUser; children: Reac
         <AppNav user={user} />
       </aside>
       <main className="main">{children}</main>
-      <TaskSoundNotifier />
-      <GoidaReminder />
-      <WeeklyReportReminder />
-      <PresenceTracker />
+      {user.approvedAt ? (
+        <>
+          <TaskSoundNotifier />
+          <GoidaReminder />
+          <WeeklyReportReminder />
+          <PresenceTracker />
+        </>
+      ) : null}
     </div>
   );
 }

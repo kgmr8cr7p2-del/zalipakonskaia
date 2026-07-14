@@ -38,7 +38,7 @@ export function EmailCodeForm({ email }: { email: string }) {
         setError(data.error ?? "Не удалось подтвердить почту");
         return;
       }
-      router.push("/board");
+      router.push(data.approved === false ? "/pending-approval" : "/board");
       router.refresh();
     } catch {
       setError("Не удалось связаться с сервером. Попробуйте ещё раз.");

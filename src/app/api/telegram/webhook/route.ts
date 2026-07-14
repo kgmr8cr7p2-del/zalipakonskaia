@@ -36,7 +36,10 @@ export async function POST(request: Request) {
     : null;
   let connected = false;
   if (linkedUserId) {
-    const user = await prisma.user.findUnique({ where: { id: linkedUserId }, select: { id: true } });
+    const user = await prisma.user.findFirst({
+      where: { id: linkedUserId, emailVerifiedAt: { not: null }, approvedAt: { not: null } },
+      select: { id: true },
+    });
     if (user) {
       await prisma.telegramConnection.upsert({
         where: { userId: user.id },
@@ -53,7 +56,7 @@ export async function POST(request: Request) {
 
 function hasValidSecret(request: Request) {
   const expected = process.env.TELEGRAM_WEBHOOK_SECRET ?? "";
-  if (!expected) return true;
+  if (!expected) return false;
 
   const received = request.headers.get("x-telegram-bot-api-secret-token") ?? "";
   const expectedBuffer = Buffer.from(expected);

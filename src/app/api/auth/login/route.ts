@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     await createSession(user.id);
-    return ok({ ok: true, verified: true });
+    return ok({ ok: true, verified: true, approved: Boolean(user.approvedAt) });
   } catch (error) {
     if (error instanceof MailDeliveryError) return fail(error.message, 503);
     return handleRouteError(error);
