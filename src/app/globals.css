@@ -1574,6 +1574,26 @@
     font-size: .82rem;
   }
 
+  .board-planned-toggle {
+    gap: .35rem;
+    white-space: nowrap;
+  }
+
+  .board-planned-toggle.is-active {
+    border-color: color-mix(in srgb, var(--brand) 62%, var(--border));
+    background: color-mix(in srgb, var(--brand) 12%, var(--panel));
+    color: var(--brand-strong);
+  }
+
+  .board-sort-control {
+    display: inline-flex;
+    min-inline-size: 0;
+  }
+
+  .board-sort-control .compact-select {
+    min-inline-size: 11.5rem;
+  }
+
   .reset-filter-button {
     white-space: nowrap;
   }

@@ -18,9 +18,16 @@ const priorityLabels = {
 
 type View = any;
 type Task = any;
-const emptyFilters = { q: "", priority: "", assignee: "", deadline: "", oilDepot: "" };
+const emptyFilters = { q: "", priority: "", assignee: "", deadline: "", oilDepot: "", withoutPlanned: "", sort: "priority-deadline" };
 type Filters = typeof emptyFilters;
 type ViewMode = "board" | "list" | "timeline" | "mine";
+type SortMode = "priority-deadline" | "deadline-priority" | "position";
+
+const sortLabels: Record<SortMode, string> = {
+  "priority-deadline": "Приоритет → дедлайн",
+  "deadline-priority": "Дедлайн → приоритет",
+  position: "Порядок добавления",
+};
 
 export function BoardClient({ initialView }: { initialView: View }) {
   const [view, setView] = useState(initialView);
@@ -44,9 +51,13 @@ export function BoardClient({ initialView }: { initialView: View }) {
     () =>
       view?.board?.columns?.map((column: any) => ({
         ...column,
-        tasks: viewMode === "mine" ? column.tasks.filter((task: Task) => taskAssigneeUsers(task).some((user: any) => user.id === view.currentUser.id)) : column.tasks,
+        tasks: sortTasks(
+          (viewMode === "mine" ? column.tasks.filter((task: Task) => taskAssigneeUsers(task).some((user: any) => user.id === view.currentUser.id)) : column.tasks)
+            .filter((task: Task) => filters.withoutPlanned !== "1" || task.priority !== "PLANNED"),
+          filters.sort as SortMode,
+        ),
       })) ?? [],
-    [view, viewMode],
+    [view, viewMode, filters.withoutPlanned, filters.sort],
   );
   const visibleTasks = useMemo(() => visibleColumns.flatMap((column: any) => column.tasks), [visibleColumns]);
   const activeTask = selected ? tasks.find((task: Task) => task.id === selected.id) ?? selected : null;
@@ -447,6 +458,29 @@ export function BoardClient({ initialView }: { initialView: View }) {
             <button className={viewMode === "timeline" ? "active" : ""} type="button" onClick={() => setViewMode("timeline")}>Таймлайн</button>
             {!view.board.ownerId ? <button className={viewMode === "mine" ? "active" : ""} type="button" onClick={() => setViewMode("mine")}>Моя работа</button> : null}
           </div>
+          <button
+            className={`button secondary compact-button board-planned-toggle ${filters.withoutPlanned === "1" ? "is-active" : ""}`}
+            type="button"
+            aria-pressed={filters.withoutPlanned === "1"}
+            onClick={() => updateFilter("withoutPlanned", filters.withoutPlanned === "1" ? "" : "1")}
+            title="Показывать или скрывать задачи с приоритетом «Плановые работы»"
+          >
+            <Flag size={16} aria-hidden="true" />
+            {filters.withoutPlanned === "1" ? "Показать плановые" : "Без плановых работ"}
+          </button>
+          <label className="board-sort-control">
+            <span className="visually-hidden">Сортировка задач</span>
+            <select
+              className="select compact-select"
+              aria-label="Сортировка задач"
+              value={filters.sort}
+              onChange={(event) => updateFilter("sort", event.currentTarget.value)}
+            >
+              {Object.entries(sortLabels).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
           {view.permissions.canCreateTask ? (
             <CreateTaskButton onClick={openCreateTask} />
           ) : null}
@@ -471,7 +505,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
         </div>
         {error && !createOpen && !activeTask ? <p className="chip priority-HIGH" role="alert">{error}</p> : null}
         {viewMode === "list" ? <TaskTable tasks={visibleTasks} onOpen={openTask} personal={Boolean(view.board.ownerId)} /> : null}
-        {viewMode === "timeline" ? <TaskTimeline tasks={tasks} onOpen={openTask} /> : null}
+        {viewMode === "timeline" ? <TaskTimeline tasks={visibleTasks} onOpen={openTask} /> : null}
         <section className={`board ${viewMode === "list" || viewMode === "timeline" ? "is-hidden" : ""}`} aria-label="Канбан-доска">
           {visibleColumns.map((column: any) => (
             <article
@@ -1585,15 +1619,41 @@ function taskAssigneeUsers(task: Task) {
   return task.assignee ? [task.assignee] : [];
 }
 
+const priorityOrder: Record<string, number> = {
+  CRITICAL: 0,
+  HIGH: 1,
+  MEDIUM: 2,
+  PLANNED: 3,
+  LOW: 4,
+};
+
+function sortTasks(tasks: Task[], mode: SortMode) {
+  return [...tasks].sort((a, b) => {
+    if (mode === "position") return (a.position ?? 0) - (b.position ?? 0);
+
+    const deadlineA = a.deadline ? new Date(a.deadline).getTime() : Number.POSITIVE_INFINITY;
+    const deadlineB = b.deadline ? new Date(b.deadline).getTime() : Number.POSITIVE_INFINITY;
+    const priorityA = priorityOrder[a.priority] ?? Number.MAX_SAFE_INTEGER;
+    const priorityB = priorityOrder[b.priority] ?? Number.MAX_SAFE_INTEGER;
+    const primary = mode === "deadline-priority" ? deadlineA - deadlineB : priorityA - priorityB;
+    if (primary !== 0) return primary;
+    const secondary = mode === "deadline-priority" ? priorityA - priorityB : deadlineA - deadlineB;
+    return secondary || (a.position ?? 0) - (b.position ?? 0);
+  });
+}
+
 function readFiltersFromUrl() {
   if (typeof window === "undefined") return { ...emptyFilters };
   const params = new URLSearchParams(window.location.search);
+  const requestedSort = params.get("sort");
   return {
     q: params.get("q") ?? "",
     priority: params.get("priority") ?? "",
     assignee: params.get("assignee") ?? "",
     deadline: params.get("deadline") ?? "",
     oilDepot: params.get("oilDepot") ?? "",
+    withoutPlanned: params.get("withoutPlanned") === "1" ? "1" : "",
+    sort: (Object.prototype.hasOwnProperty.call(sortLabels, requestedSort ?? "") ? requestedSort : emptyFilters.sort) as SortMode,
   };
 }
 
