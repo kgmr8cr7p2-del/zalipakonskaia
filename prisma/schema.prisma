@@ -15,6 +15,7 @@ enum RoleName {
 
 enum Priority {
   LOW
+  PLANNED
   MEDIUM
   HIGH
   CRITICAL

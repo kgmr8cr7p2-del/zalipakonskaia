@@ -8,7 +8,7 @@ type ArchiveTask = {
   taskNumber: number;
   title: string;
   description: string;
-  priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  priority: "LOW" | "PLANNED" | "MEDIUM" | "HIGH" | "CRITICAL";
   deadline: string | null;
   archivedAt: string | null;
   column: { name: string };
@@ -22,7 +22,7 @@ type ArchiveTask = {
   fileAttachments: Array<{ id: string; fileName: string; url: string; size: number; uploader: { name: string } }>;
 };
 
-const priorityLabels = { LOW: "Низкий", MEDIUM: "Средний", HIGH: "Высокий", CRITICAL: "Критический" } as const;
+const priorityLabels = { LOW: "Низкий", PLANNED: "Плановые работы", MEDIUM: "Средний", HIGH: "Высокий", CRITICAL: "Критический" } as const;
 
 export function ArchiveBrowser({ tasks }: { tasks: ArchiveTask[] }) {
   const [selected, setSelected] = useState<ArchiveTask | null>(null);

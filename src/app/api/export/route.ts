@@ -5,6 +5,7 @@ import { fail } from "@/lib/http";
 
 const priorityLabels = {
   LOW: "Низкий",
+  PLANNED: "Плановые работы",
   MEDIUM: "Средний",
   HIGH: "Высокий",
   CRITICAL: "Критический",

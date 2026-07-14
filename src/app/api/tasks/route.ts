@@ -14,6 +14,7 @@ import { taskTitleKey } from "@/lib/task-title";
 
 const priorityLabels = {
   LOW: "Низкая",
+  PLANNED: "Плановые работы",
   MEDIUM: "Средняя",
   HIGH: "Высокая",
   CRITICAL: "Критическая",

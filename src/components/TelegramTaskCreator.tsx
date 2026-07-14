@@ -128,6 +128,7 @@ export function TelegramTaskCreator({ canCreate, data }: { canCreate: boolean; d
               <span className="label">Важность</span>
               <select className="select" name="priority" defaultValue="MEDIUM">
                 <option value="LOW">Низкая</option>
+                <option value="PLANNED">Плановые работы</option>
                 <option value="MEDIUM">Средняя</option>
                 <option value="HIGH">Высокая</option>
                 <option value="CRITICAL">Критическая</option>

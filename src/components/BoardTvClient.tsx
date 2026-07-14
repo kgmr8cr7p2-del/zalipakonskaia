@@ -12,6 +12,7 @@ type Weather = any;
 
 const priorityLabels = {
   LOW: "Низкий",
+  PLANNED: "Плановые работы",
   MEDIUM: "Средний",
   HIGH: "Высокий",
   CRITICAL: "Критический",
