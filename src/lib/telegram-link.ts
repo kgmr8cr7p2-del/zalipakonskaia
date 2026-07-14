@@ -22,10 +22,10 @@ export function verifyTelegramStartToken(token: string) {
   return userId;
 }
 
-export async function telegramBotLink(userId: string) {
+export async function telegramBotLink() {
   const username = await resolveBotUsername();
   if (!/^[a-z0-9_]{5,32}$/i.test(username)) return null;
-  return `https://telegram.me/${username}?start=${encodeURIComponent(createTelegramStartToken(userId))}`;
+  return `https://telegram.me/${username}`;
 }
 
 async function resolveBotUsername() {

@@ -1,6 +1,7 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { fail, handleRouteError } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 
@@ -8,7 +9,7 @@ type Params = { params: Promise<{ messageId: string }> };
 
 export async function GET(request: Request, { params }: Params) {
   try {
-    const user = await requireVerifiedUser();
+    const user = await requirePermission(PermissionKey.USE_CHATS);
     const { messageId } = await params;
     const message = await prisma.directMessage.findFirst({
       where: { id: messageId, OR: [{ senderId: user.id }, { recipientId: user.id }] },

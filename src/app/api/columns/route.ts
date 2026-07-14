@@ -1,5 +1,5 @@
-import { RoleName } from "@prisma/client";
 import { requireVerifiedUser } from "@/lib/auth";
+import { canManageColumns } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/activity";
 import { columnSchema } from "@/lib/validators";
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const input = columnSchema.parse(body);
     const boardId = typeof body.boardId === "string" ? body.boardId : "";
     const board = await prisma.board.findUnique({ where: { id: boardId }, include: { columns: true } });
-    if (!board || (board.ownerId ? board.ownerId !== user.id : user.role.name !== RoleName.ADMIN)) {
+    if (!board || (board.ownerId ? board.ownerId !== user.id : !canManageColumns(user))) {
       return fail("Недостаточно прав для изменения колонок этой доски", 403);
     }
 

@@ -5225,6 +5225,107 @@
     padding: .85rem;
   }
 
+  .admin-user-search { max-inline-size: 32rem; }
+
+  .admin-user-search-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .admin-user-search-control svg {
+    position: absolute;
+    inset-inline-start: .75rem;
+    z-index: 1;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .admin-user-search-control .input { padding-inline-start: 2.4rem; }
+
+  .role-manager { display: grid; gap: 1rem; }
+
+  .role-manager-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 28rem);
+    align-items: end;
+    gap: 1rem;
+  }
+
+  .role-create-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: .65rem;
+  }
+
+  .role-list { display: grid; gap: .65rem; }
+
+  .role-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel-2);
+  }
+
+  .role-card > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .9rem 1rem;
+    cursor: pointer;
+  }
+
+  .role-card > summary > span:first-child { display: grid; gap: .15rem; }
+  .role-card > summary small,
+  .role-permission small { color: var(--muted); }
+
+  .role-card-body {
+    display: grid;
+    gap: 1rem;
+    border-block-start: 1px solid var(--border);
+    padding: 1rem;
+  }
+
+  .role-permission-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .55rem;
+    margin: 0;
+    border: 0;
+    padding: 0;
+  }
+
+  .role-permission-grid legend {
+    grid-column: 1 / -1;
+    margin-block-end: .35rem;
+    font-size: .78rem;
+    font-weight: 850;
+  }
+
+  .role-permission {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: .65rem;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: .75rem;
+  }
+
+  .role-permission input { margin-block-start: .2rem; }
+  .role-permission span { display: grid; gap: .2rem; }
+  .role-permission small { line-height: 1.4; }
+
+  .role-card-actions,
+  .telegram-connect-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: .55rem;
+  }
+
   .profile-chat-link {
     inline-size: fit-content;
   }
@@ -5448,8 +5549,8 @@
   }
 
   .telegram-settings-panel {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
     gap: 1rem;
     border-color: color-mix(in srgb, #2aabee 30%, var(--border));
     background: color-mix(in srgb, #2aabee 5%, var(--panel));
@@ -5468,6 +5569,64 @@
     border-radius: 12px;
     background: #2aabee;
     color: #fff;
+  }
+
+  .telegram-settings-content {
+    display: grid;
+    gap: .8rem;
+    min-inline-size: 0;
+  }
+
+  .telegram-settings-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .telegram-status {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted) 12%, var(--panel));
+    color: var(--muted);
+    padding: .28rem .6rem;
+    font-size: .72rem;
+    font-weight: 800;
+  }
+
+  .telegram-status.is-connected {
+    background: color-mix(in srgb, var(--success) 12%, var(--panel));
+    color: var(--success);
+  }
+
+  .telegram-connect-steps {
+    display: grid;
+    gap: .3rem;
+    margin: 0;
+    padding-inline-start: 1.25rem;
+    color: var(--muted);
+    font-size: .84rem;
+    line-height: 1.45;
+  }
+
+  .telegram-connect-code-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .55rem;
+  }
+
+  .telegram-connect-code-row code {
+    flex: 1 1 14rem;
+    border: 1px solid color-mix(in srgb, #2aabee 34%, var(--border));
+    border-radius: 9px;
+    background: var(--panel);
+    padding: .72rem .85rem;
+    color: var(--text);
+    font-size: .95rem;
+    font-weight: 800;
+    letter-spacing: .03em;
+    user-select: all;
   }
 
   .telegram-connection-status {
@@ -7725,6 +7884,22 @@
       min-inline-size: 0;
     }
 
+    .role-manager-head,
+    .role-create-form,
+    .role-permission-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .role-create-form > .button,
+    .telegram-connect-actions > .button,
+    .telegram-connect-actions > a {
+      inline-size: 100%;
+    }
+
+    .telegram-settings-heading {
+      display: grid;
+    }
+
     .admin-users .table {
       display: block;
       min-inline-size: 0;
@@ -7777,7 +7952,8 @@
     .admin-users .table td:nth-child(1)::before { content: "Имя"; }
     .admin-users .table td:nth-child(2)::before { content: "Почта"; }
     .admin-users .table td:nth-child(3)::before { content: "Статус"; }
-    .admin-users .table td:nth-child(4)::before { content: "Роль"; }
+    .admin-users .table td:nth-child(4)::before { content: "Доступ"; }
+    .admin-users .table td:nth-child(5)::before { content: "Роль"; }
 
     .admin-users .table .select {
       inline-size: 100%;

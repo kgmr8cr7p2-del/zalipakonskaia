@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/AppShell";
 import { GlobalHistory } from "@/components/BoardInsights";
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { getActivityHistory, getHistoryFilterOptions } from "@/lib/board-data";
 
 const activityOptions = [
@@ -24,7 +25,7 @@ export default async function HistoryPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const user = await requireVerifiedUser();
+  const user = await requirePermission(PermissionKey.VIEW_HISTORY);
   const params = await searchParams;
   const urlParams = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {

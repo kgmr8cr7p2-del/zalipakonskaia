@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/AppShell";
 import { BoardClient } from "@/components/BoardClient";
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { getBoardView } from "@/lib/board-data";
 import { notFound } from "next/navigation";
 
@@ -9,7 +10,7 @@ export default async function BoardPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const user = await requireVerifiedUser();
+  const user = await requirePermission(PermissionKey.VIEW_BOARD);
   const params = await searchParams;
   const urlParams = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {

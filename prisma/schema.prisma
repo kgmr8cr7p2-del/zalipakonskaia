@@ -7,10 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum RoleName {
-  ADMIN
-  MANAGER
-  EXECUTOR
+enum PermissionKey {
+  VIEW_BOARD
+  CREATE_TASKS
+  EDIT_ALL_TASKS
+  DELETE_TASKS
+  MANAGE_COLUMNS
+  VIEW_REPORTS
+  VIEW_HISTORY
+  USE_CHATS
+  USE_TELEGRAM
+  MANAGE_WORKSPACE
+  MANAGE_USERS
 }
 
 enum Priority {
@@ -38,8 +46,10 @@ enum ActivityAction {
 }
 
 model Role {
-  id          String       @id @default(cuid())
-  name        RoleName     @unique
+  id          String          @id @default(cuid())
+  name        String          @unique
+  systemKey   String?         @unique
+  permissions PermissionKey[] @default([])
   users       User[]
   userInvites UserInvite[]
 }
@@ -77,6 +87,7 @@ model User {
   emailTokens         EmailVerificationToken[]
   passwordResetTokens PasswordResetToken[]
   telegramConnection  TelegramConnection?
+  telegramConnectCode TelegramConnectCode?
   personalBoards      Board[]                  @relation("PersonalBoardOwner")
 }
 
@@ -296,6 +307,17 @@ model TelegramConnection {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model TelegramConnectCode {
+  id        String   @id @default(cuid())
+  codeHash  String   @unique
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
 }
 
 model NotificationDispatch {

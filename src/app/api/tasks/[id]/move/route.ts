@@ -18,9 +18,9 @@ export async function POST(request: Request, { params }: Params) {
     const body = await request.json();
     const columnId = String(body.columnId ?? "");
     const position = Number(body.position ?? 0);
-    const access = await canAccessTask(user.id, id);
+    const access = await canAccessTask(user, id);
     if (!access) return fail("Задача не найдена", 404);
-    const destinationColumn = await getAccessibleColumn(user.id, columnId);
+    const destinationColumn = await getAccessibleColumn(user, columnId);
     if (!destinationColumn) return fail("Колонка не найдена", 404);
     if (destinationColumn.boardId !== access.column.boardId) return fail("Нельзя перенести задачу на другую доску", 400);
     const existing = await prisma.task.findUnique({ where: { id }, include: { column: { select: { name: true } }, assignees: { select: { userId: true } } } });

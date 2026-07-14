@@ -18,8 +18,9 @@ await callTelegram("setWebhook", {
   ...(secret ? { secret_token: secret } : {}),
 });
 await callTelegram("setMyCommands", {
-  commands: [{ command: "start", description: "Создать новую задачу" }],
+  commands: [{ command: "start", description: "Подключить уведомления" }],
 });
+await callTelegram("setChatMenuButton", { menu_button: { type: "default" } });
 
 console.log(`Telegram webhook configured: ${webhookUrl}`);
 

@@ -1,4 +1,4 @@
-import { Priority, RoleName } from "@prisma/client";
+import { PermissionKey, Priority } from "@prisma/client";
 import { z } from "zod";
 
 export const registerSchema = z.object({
@@ -90,11 +90,16 @@ export const profileSchema = z.object({
 });
 
 export const userAdminUpdateSchema = z.object({
-  role: z.nativeEnum(RoleName).optional(),
+  roleId: z.string().cuid().optional(),
   approved: z.boolean().optional(),
-}).refine((input) => input.role !== undefined || input.approved !== undefined, "Нет изменений для сохранения");
+}).refine((input) => input.roleId !== undefined || input.approved !== undefined, "Нет изменений для сохранения");
 
 export const userInviteSchema = z.object({
   email: z.string().email("Введите корректную почту").transform((value) => value.toLowerCase()),
-  role: z.nativeEnum(RoleName),
+  roleId: z.string().cuid(),
+});
+
+export const roleSchema = z.object({
+  name: z.string().trim().min(2, "Введите название роли").max(60, "Название роли не должно превышать 60 символов"),
+  permissions: z.array(z.nativeEnum(PermissionKey)).max(Object.values(PermissionKey).length),
 });

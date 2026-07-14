@@ -1,17 +1,34 @@
-import { PrismaClient, RoleName } from "@prisma/client";
+import { PermissionKey, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  await Promise.all(
-    [RoleName.ADMIN, RoleName.MANAGER, RoleName.EXECUTOR].map((name) =>
-      prisma.role.upsert({
-        where: { name },
-        update: {},
-        create: { name },
-      }),
-    ),
-  );
+  const allPermissions = Object.values(PermissionKey);
+  await Promise.all([
+    prisma.role.upsert({
+      where: { systemKey: "ADMIN" },
+      update: { name: "Администратор", permissions: allPermissions },
+      create: { name: "Администратор", systemKey: "ADMIN", permissions: allPermissions },
+    }),
+    prisma.role.upsert({
+      where: { systemKey: "MANAGER" },
+      update: {},
+      create: {
+        name: "Менеджер",
+        systemKey: "MANAGER",
+        permissions: [PermissionKey.VIEW_BOARD, PermissionKey.CREATE_TASKS, PermissionKey.EDIT_ALL_TASKS, PermissionKey.VIEW_REPORTS, PermissionKey.VIEW_HISTORY, PermissionKey.USE_CHATS, PermissionKey.USE_TELEGRAM],
+      },
+    }),
+    prisma.role.upsert({
+      where: { systemKey: "EXECUTOR" },
+      update: {},
+      create: {
+        name: "Исполнитель",
+        systemKey: "EXECUTOR",
+        permissions: [PermissionKey.VIEW_BOARD, PermissionKey.VIEW_REPORTS, PermissionKey.VIEW_HISTORY, PermissionKey.USE_CHATS, PermissionKey.USE_TELEGRAM],
+      },
+    }),
+  ]);
 
   const board = await prisma.board.upsert({
     where: { id: "default-board" },

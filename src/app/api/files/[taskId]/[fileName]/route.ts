@@ -9,7 +9,7 @@ type Params = { params: Promise<{ taskId: string; fileName: string }> };
 export async function GET(_: Request, { params }: Params) {
   const user = await requireVerifiedUser();
   const { taskId, fileName } = await params;
-  if (!(await canAccessTask(user.id, taskId))) return fail("Файл не найден", 404);
+  if (!(await canAccessTask(user, taskId))) return fail("Файл не найден", 404);
   const safeName = decodeURIComponent(fileName).replace(/[\\/]/g, "");
   const filePath = path.join(process.cwd(), "uploads", taskId, safeName);
   try {

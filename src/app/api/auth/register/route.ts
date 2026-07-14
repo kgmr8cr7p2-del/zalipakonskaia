@@ -1,4 +1,3 @@
-import { RoleName } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
 import { AuthCodeCooldownError, issueVerificationCode } from "@/lib/email-auth";
@@ -19,8 +18,7 @@ export async function POST(request: Request) {
     const exists = await prisma.user.findUnique({ where: { email: input.email } });
     if (exists?.emailVerifiedAt) return fail("Пользователь с такой почтой уже существует", 409);
 
-    const roleName = invite?.role.name ?? RoleName.EXECUTOR;
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    const role = invite?.role ?? await prisma.role.findUniqueOrThrow({ where: { systemKey: "EXECUTOR" } });
     const accountData = {
       name: formatUserName(input),
       lastName: input.lastName,

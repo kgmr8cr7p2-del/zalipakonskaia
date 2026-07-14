@@ -1,5 +1,5 @@
-import { RoleName } from "@prisma/client";
-import { requireRole } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/activity";
 import { handleRouteError, ok } from "@/lib/http";
@@ -7,7 +7,7 @@ import { oilDepotSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
   try {
-    const user = await requireRole([RoleName.ADMIN]);
+    const user = await requirePermission(PermissionKey.MANAGE_WORKSPACE);
     const input = oilDepotSchema.parse(await request.json());
     const oilDepot = await prisma.oilDepot.create({
       data: {

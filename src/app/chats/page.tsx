@@ -1,10 +1,11 @@
 import { MessageCircleMore } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ChatHub } from "@/components/ChatHub";
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 
 export default async function ChatsPage() {
-  const user = await requireVerifiedUser();
+  const user = await requirePermission(PermissionKey.USE_CHATS);
 
   return (
     <AppShell user={user}>

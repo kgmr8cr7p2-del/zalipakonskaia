@@ -1,10 +1,11 @@
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { fail, handleRouteError, ok } from "@/lib/http";
 import { personalBoardSchema } from "@/lib/validators";
 
 export async function GET() {
-  const user = await requireVerifiedUser();
+  const user = await requirePermission(PermissionKey.VIEW_BOARD);
   const boards = await prisma.board.findMany({
     where: { ownerId: user.id },
     select: { id: true, name: true, createdAt: true, _count: { select: { columns: true } } },
@@ -15,7 +16,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await requireVerifiedUser();
+    const user = await requirePermission(PermissionKey.VIEW_BOARD);
     const input = personalBoardSchema.parse(await request.json());
     const duplicate = await prisma.board.findFirst({ where: { ownerId: user.id, name: input.name }, select: { id: true } });
     if (duplicate) return fail("Личная доска с таким названием уже существует", 409);

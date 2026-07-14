@@ -1,10 +1,11 @@
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { handleRouteError, ok } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const viewer = await requireVerifiedUser();
+    const viewer = await requirePermission(PermissionKey.USE_CHATS);
     const [users, messages] = await Promise.all([
       prisma.user.findMany({
         where: { id: { not: viewer.id }, emailVerifiedAt: { not: null }, approvedAt: { not: null } },

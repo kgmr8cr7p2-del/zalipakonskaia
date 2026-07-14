@@ -1,14 +1,15 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
-import { RoleName, type User } from "@prisma/client";
+import { PermissionKey, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashToken, randomToken } from "@/lib/crypto";
+import { hasPermission } from "@/lib/role-permissions";
 
 export const SESSION_COOKIE = "tkb_session";
 const SESSION_DAYS = 14;
 
-export type CurrentUser = User & { role: { name: RoleName } };
+export type CurrentUser = Prisma.UserGetPayload<{ include: { role: true } }>;
 
 export async function createSession(userId: string) {
   const token = randomToken();
@@ -74,9 +75,9 @@ export async function requireVerifiedUser() {
   return user;
 }
 
-export async function requireRole(roles: RoleName[]) {
+export async function requirePermission(permission: PermissionKey) {
   const user = await requireVerifiedUser();
-  if (!roles.includes(user.role.name)) redirect("/no-access");
+  if (!hasPermission(user, permission)) redirect("/no-access");
   return user;
 }
 

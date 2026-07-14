@@ -1,13 +1,14 @@
 import { AppShell } from "@/components/AppShell";
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { accessibleBoardWhere } from "@/lib/board-access";
 import { ArchiveBrowser } from "@/components/ArchiveBrowser";
 
 export default async function ArchivePage() {
-  const user = await requireVerifiedUser();
+  const user = await requirePermission(PermissionKey.VIEW_BOARD);
   const tasks = await prisma.task.findMany({
-    where: { archivedAt: { not: null }, column: { board: accessibleBoardWhere(user.id) } },
+    where: { archivedAt: { not: null }, column: { board: accessibleBoardWhere(user) } },
     include: {
       column: true,
       oilDepot: true,

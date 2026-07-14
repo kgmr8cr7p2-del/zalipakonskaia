@@ -1,31 +1,29 @@
-import { RoleName, type Task } from "@prisma/client";
+import { PermissionKey, type Task } from "@prisma/client";
 import type { CurrentUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/role-permissions";
 
 export function isAdmin(user: CurrentUser) {
-  return user.role.name === RoleName.ADMIN;
-}
-
-export function isManager(user: CurrentUser) {
-  return user.role.name === RoleName.MANAGER;
+  return hasPermission(user, PermissionKey.MANAGE_USERS);
 }
 
 export function canManageColumns(user: CurrentUser) {
-  return isAdmin(user);
+  return hasPermission(user, PermissionKey.VIEW_BOARD) && hasPermission(user, PermissionKey.MANAGE_COLUMNS);
 }
 
 export function canCreateTask(user: CurrentUser) {
-  return isAdmin(user) || isManager(user);
+  return hasPermission(user, PermissionKey.VIEW_BOARD) && hasPermission(user, PermissionKey.CREATE_TASKS);
 }
 
 type TaskWithAssignees = Pick<Task, "assigneeId"> & { assignees?: Array<{ userId: string }> };
 
 export function canEditTask(user: CurrentUser, task?: TaskWithAssignees | null) {
-  if (isAdmin(user) || isManager(user)) return true;
+  if (!hasPermission(user, PermissionKey.VIEW_BOARD)) return false;
+  if (hasPermission(user, PermissionKey.EDIT_ALL_TASKS)) return true;
   return Boolean(task && (task.assigneeId === user.id || task.assignees?.some((assignment) => assignment.userId === user.id)));
 }
 
 export function canDeleteTask(user: CurrentUser) {
-  return isAdmin(user);
+  return hasPermission(user, PermissionKey.VIEW_BOARD) && hasPermission(user, PermissionKey.DELETE_TASKS);
 }
 
 export function canDeleteComment(user: CurrentUser, authorId: string) {

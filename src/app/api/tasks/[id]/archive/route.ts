@@ -12,7 +12,7 @@ export async function POST(_: Request, { params }: Params) {
   try {
     const user = await requireVerifiedUser();
     const { id } = await params;
-    const access = await canAccessTask(user.id, id);
+    const access = await canAccessTask(user, id);
     if (!access) return fail("Задача не найдена", 404);
     if (access.column.board.ownerId !== user.id && !canDeleteTask(user)) return fail("Переносить задачи общей доски в архив может только администратор", 403);
     const task = await prisma.task.update({

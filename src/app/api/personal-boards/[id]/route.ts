@@ -1,6 +1,7 @@
 import path from "node:path";
 import { rm } from "node:fs/promises";
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { fail, handleRouteError, ok } from "@/lib/http";
 
@@ -8,7 +9,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function DELETE(_: Request, { params }: Params) {
   try {
-    const user = await requireVerifiedUser();
+    const user = await requirePermission(PermissionKey.VIEW_BOARD);
     const { id } = await params;
     const board = await prisma.board.findFirst({ where: { id, ownerId: user.id }, select: { id: true } });
     if (!board) return fail("Личная доска не найдена", 404);

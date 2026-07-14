@@ -1,8 +1,10 @@
-import { ActivityAction, Prisma, RoleName } from "@prisma/client";
+import { ActivityAction, PermissionKey, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { CurrentUser } from "@/lib/auth";
 import { cleanupOldCompletedTasks } from "@/lib/cleanup";
 import { accessibleBoardWhere } from "@/lib/board-access";
+import { canCreateTask, canDeleteTask, canManageColumns } from "@/lib/permissions";
+import { hasPermission } from "@/lib/role-permissions";
 
 const profileUserSelect = {
   id: true,
@@ -55,8 +57,8 @@ export async function getBoardView(user: CurrentUser, filters?: URLSearchParams)
   const requestedBoardId = filters?.get("board")?.trim();
   const board = await prisma.board.findFirst({
     where: requestedBoardId
-      ? { id: requestedBoardId, ...accessibleBoardWhere(user.id) }
-      : { ownerId: null },
+      ? { id: requestedBoardId, ...accessibleBoardWhere(user) }
+      : { ownerId: null, ...accessibleBoardWhere(user) },
     include: {
       columns: {
         orderBy: { position: "asc" },
@@ -97,7 +99,7 @@ export async function getBoardView(user: CurrentUser, filters?: URLSearchParams)
     take: 80,
   });
   const availableBoards = await prisma.board.findMany({
-    where: accessibleBoardWhere(user.id),
+    where: accessibleBoardWhere(user),
     select: { id: true, name: true, ownerId: true, _count: { select: { columns: true } } },
     orderBy: [{ ownerId: "asc" }, { createdAt: "asc" }],
   });
@@ -155,10 +157,10 @@ export async function getBoardView(user: CurrentUser, filters?: URLSearchParams)
       emailVerifiedAt: user.emailVerifiedAt,
     },
     permissions: {
-      canManageColumns: board.ownerId === user.id || user.role.name === RoleName.ADMIN,
-      canCreateTask: Boolean(board.ownerId) || user.role.name === RoleName.ADMIN || user.role.name === RoleName.MANAGER,
-      canDeleteTask: Boolean(board.ownerId) || user.role.name === RoleName.ADMIN,
-      canAssign: Boolean(board.ownerId) || user.role.name === RoleName.ADMIN || user.role.name === RoleName.MANAGER,
+      canManageColumns: board.ownerId === user.id || canManageColumns(user),
+      canCreateTask: Boolean(board.ownerId) || canCreateTask(user),
+      canDeleteTask: Boolean(board.ownerId) || canDeleteTask(user),
+      canAssign: Boolean(board.ownerId) || hasPermission(user, PermissionKey.CREATE_TASKS),
     },
   };
 }

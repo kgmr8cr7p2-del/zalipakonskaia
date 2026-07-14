@@ -20,7 +20,7 @@ export async function PATCH(request: Request, { params }: Params) {
   try {
     const user = await requireVerifiedUser();
     const { id } = await params;
-    const access = await canAccessTask(user.id, id);
+    const access = await canAccessTask(user, id);
     if (!access) return fail("Задача не найдена", 404);
     const isPersonalBoard = access.column.board.ownerId === user.id;
     const existing = await prisma.task.findUnique({
@@ -40,7 +40,7 @@ export async function PATCH(request: Request, { params }: Params) {
       ? Array.from(new Set(input.assigneeIds?.length ? input.assigneeIds : input.assigneeId ? [input.assigneeId] : []))
       : undefined;
     if (input.columnId) {
-      const targetColumn = await getAccessibleColumn(user.id, input.columnId);
+      const targetColumn = await getAccessibleColumn(user, input.columnId);
       if (!targetColumn || targetColumn.boardId !== access.column.boardId) return fail("Нельзя перенести задачу на другую доску", 400);
     }
     if (isPersonalBoard && assigneeIds?.some((userId) => userId !== user.id)) return fail("На личной доске задачу можно назначить только себе", 403);
@@ -194,7 +194,7 @@ export async function DELETE(_: Request, { params }: Params) {
   try {
     const user = await requireVerifiedUser();
     const { id } = await params;
-    const access = await canAccessTask(user.id, id);
+    const access = await canAccessTask(user, id);
     if (!access) return fail("Задача не найдена", 404);
     if (access.column.board.ownerId !== user.id && !canDeleteTask(user)) return fail("Удалять задачи общей доски может только администратор", 403);
     const task = await prisma.task.findUnique({

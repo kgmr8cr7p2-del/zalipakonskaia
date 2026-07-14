@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { getBoardView } from "@/lib/board-data";
 import { fail } from "@/lib/http";
 
@@ -12,7 +13,7 @@ const priorityLabels = {
 };
 
 export async function GET(request: Request) {
-  const user = await requireVerifiedUser();
+  const user = await requirePermission(PermissionKey.VIEW_REPORTS);
   const view = await getBoardView(user, new URL(request.url).searchParams);
   if (!view) return fail("Доска не найдена", 404);
 

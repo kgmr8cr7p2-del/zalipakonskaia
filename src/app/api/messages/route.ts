@@ -1,6 +1,7 @@
 import path from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { fail, handleRouteError, ok } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 
@@ -19,7 +20,7 @@ const messageSelect = {
 
 export async function GET(request: Request) {
   try {
-    const user = await requireVerifiedUser();
+    const user = await requirePermission(PermissionKey.USE_CHATS);
     const targetId = new URL(request.url).searchParams.get("userId")?.trim();
     if (!targetId || targetId === user.id) return fail("Собеседник не выбран", 422);
     const target = await prisma.user.findFirst({ where: { id: targetId, approvedAt: { not: null } }, select: { id: true } });
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const user = await requireVerifiedUser();
+    const user = await requirePermission(PermissionKey.USE_CHATS);
     const formData = await request.formData();
     const targetId = String(formData.get("userId") ?? "").trim();
     const text = String(formData.get("text") ?? "").trim();

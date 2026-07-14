@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const user = await requireVerifiedUser();
     const input = taskSchema.parse(await request.json());
     const assigneeIds = Array.from(new Set(input.assigneeIds?.length ? input.assigneeIds : input.assigneeId ? [input.assigneeId] : []));
-    const targetColumn = await getAccessibleColumn(user.id, input.columnId);
+    const targetColumn = await getAccessibleColumn(user, input.columnId);
     if (!targetColumn) return fail("Колонка не найдена", 404);
     const isPersonalBoard = targetColumn.board.ownerId === user.id;
     if (!isPersonalBoard && !canCreateTask(user)) return fail("Недостаточно прав для создания задачи", 403);

@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
-import { Prisma } from "@prisma/client";
-import { requireVerifiedUser } from "@/lib/auth";
+import { PermissionKey, Prisma } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getWeeklyReport } from "@/lib/weekly-report";
 import { sendWeeklyReportMessage } from "@/lib/telegram";
@@ -72,7 +72,7 @@ async function authorizeRequest(request: Request) {
   const expected = process.env.SESSION_SECRET ?? "";
   const received = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
   if (expected && received && secureEqual(expected, received)) return;
-  await requireVerifiedUser();
+  await requirePermission(PermissionKey.VIEW_REPORTS);
 }
 
 function secureEqual(left: string, right: string) {

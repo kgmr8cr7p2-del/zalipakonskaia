@@ -1,5 +1,5 @@
-import { RoleName } from "@prisma/client";
-import { requireRole } from "@/lib/auth";
+import { PermissionKey } from "@prisma/client";
+import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/activity";
 import { fail, handleRouteError, ok } from "@/lib/http";
@@ -9,7 +9,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, { params }: Params) {
   try {
-    const user = await requireRole([RoleName.ADMIN]);
+    const user = await requirePermission(PermissionKey.MANAGE_WORKSPACE);
     const { id } = await params;
     const body = await request.json();
     const input = oilDepotSchema.partial().parse(body);
@@ -35,7 +35,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
 export async function DELETE(_: Request, { params }: Params) {
   try {
-    const user = await requireRole([RoleName.ADMIN]);
+    const user = await requirePermission(PermissionKey.MANAGE_WORKSPACE);
     const { id } = await params;
     const taskCount = await prisma.task.count({ where: { oilDepotId: id } });
     if (taskCount > 0) return fail("Нельзя удалить нефтебазу, пока к ней привязаны задачи", 409);

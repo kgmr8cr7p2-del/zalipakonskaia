@@ -1,23 +1,27 @@
-import { Bot, ExternalLink, Settings2 } from "lucide-react";
+import { PermissionKey } from "@prisma/client";
+import { Settings2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { BoardSettings } from "@/components/BoardSettings";
 import { GoidaTestButton } from "@/components/GoidaTestButton";
 import { OilDepotSettings } from "@/components/OilDepotSettings";
 import { PersonalBoardSettings } from "@/components/PersonalBoardSettings";
+import { TelegramConnectPanel } from "@/components/TelegramConnectPanel";
 import { requireVerifiedUser } from "@/lib/auth";
 import { getBoardView } from "@/lib/board-data";
 import { prisma } from "@/lib/prisma";
 import { telegramBotLink } from "@/lib/telegram-link";
+import { hasPermission } from "@/lib/role-permissions";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ board?: string }> }) {
   const user = await requireVerifiedUser();
   const query = await searchParams;
   const filters = new URLSearchParams();
   if (query.board) filters.set("board", query.board);
-  const view = await getBoardView(user, filters);
+  const canViewBoards = hasPermission(user, PermissionKey.VIEW_BOARD);
+  const view = canViewBoards ? await getBoardView(user, filters) : null;
   const selectedBoard = view?.board;
   const telegramConnection = await prisma.telegramConnection.findUnique({ where: { userId: user.id }, select: { enabled: true } });
-  const botLink = await telegramBotLink(user.id);
+  const botLink = await telegramBotLink();
 
   return (
     <AppShell user={user}>
@@ -27,38 +31,21 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <h1>Настройки Taskora</h1>
           <p>Управляйте досками, справочниками и подключением личных Telegram-уведомлений.</p>
         </header>
-        <section className="settings-utilities settings-utilities-top">
-          <div className="settings-block telegram-settings-panel">
-            <span className="telegram-settings-icon" aria-hidden="true"><Bot size={22} /></span>
-            <div>
-              <h2>Чат с Telegram-ботом</h2>
-              <p className="muted">Откройте бота и нажмите «Начать». После подключения он сможет присылать напоминания с личных досок прямо вам.</p>
-              <span className={`telegram-connection-status ${telegramConnection?.enabled ? "is-connected" : ""}`}>
-                {telegramConnection?.enabled ? "Личный чат подключён" : "Личный чат ещё не подключён"}
-              </span>
-            </div>
-            {botLink ? (
-              <a className="button secondary" href={botLink} target="_blank" rel="noreferrer">
-                {telegramConnection?.enabled ? "Открыть чат с ботом" : "Подключить бота"}
-                <ExternalLink size={16} aria-hidden="true" />
-              </a>
-            ) : (
-              <span className="muted telegram-settings-unavailable">Укажите TELEGRAM_BOT_USERNAME, чтобы открыть чат.</span>
-            )}
-          </div>
-        </section>
+        {hasPermission(user, PermissionKey.USE_TELEGRAM) ? (
+          <TelegramConnectPanel connected={Boolean(telegramConnection?.enabled)} botLink={botLink} />
+        ) : null}
         <div className="settings-managers">
-          <PersonalBoardSettings initialBoards={JSON.parse(JSON.stringify((view?.availableBoards ?? []).filter((board: any) => board.ownerId === user.id)))} />
+          {canViewBoards ? <PersonalBoardSettings initialBoards={JSON.parse(JSON.stringify((view?.availableBoards ?? []).filter((board: any) => board.ownerId === user.id)))} /> : null}
           {selectedBoard ? (
             <BoardSettings
               boardId={selectedBoard.id}
               boardName={selectedBoard.name}
               boards={JSON.parse(JSON.stringify(view?.availableBoards ?? []))}
               columns={JSON.parse(JSON.stringify(selectedBoard.columns))}
-              canManage={selectedBoard.ownerId === user.id || user.role.name === "ADMIN"}
+              canManage={selectedBoard.ownerId === user.id || hasPermission(user, PermissionKey.MANAGE_COLUMNS)}
             />
           ) : null}
-          <OilDepotSettings oilDepots={JSON.parse(JSON.stringify(view?.oilDepots ?? []))} canManage={user.role.name === "ADMIN"} />
+          <OilDepotSettings oilDepots={JSON.parse(JSON.stringify(view?.oilDepots ?? []))} canManage={hasPermission(user, PermissionKey.MANAGE_WORKSPACE)} />
         </div>
         {user.email.toLowerCase() === "les_victor@mail.ru" ? (
           <section className="settings-utilities">

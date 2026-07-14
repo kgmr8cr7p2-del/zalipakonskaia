@@ -1,5 +1,5 @@
-import { RoleName } from "@prisma/client";
 import { requireVerifiedUser } from "@/lib/auth";
+import { canManageColumns } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/activity";
 import { columnSchema } from "@/lib/validators";
@@ -16,7 +16,7 @@ export async function PATCH(request: Request, { params }: Params) {
       select: { id: true, board: { select: { ownerId: true } } },
     });
     if (!existing) return fail("Колонка не найдена", 404);
-    if (existing.board.ownerId ? existing.board.ownerId !== user.id : user.role.name !== RoleName.ADMIN) {
+    if (existing.board.ownerId ? existing.board.ownerId !== user.id : !canManageColumns(user)) {
       return fail("Недостаточно прав для изменения колонки", 403);
     }
 
@@ -44,7 +44,7 @@ export async function DELETE(_: Request, { params }: Params) {
       select: { id: true, board: { select: { ownerId: true } } },
     });
     if (!existing) return fail("Колонка не найдена", 404);
-    if (existing.board.ownerId ? existing.board.ownerId !== user.id : user.role.name !== RoleName.ADMIN) {
+    if (existing.board.ownerId ? existing.board.ownerId !== user.id : !canManageColumns(user)) {
       return fail("Недостаточно прав для удаления колонки", 403);
     }
     const taskCount = await prisma.task.count({ where: { columnId: id } });

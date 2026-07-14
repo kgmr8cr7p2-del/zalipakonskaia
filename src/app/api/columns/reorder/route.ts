@@ -1,5 +1,5 @@
-import { RoleName } from "@prisma/client";
 import { requireVerifiedUser } from "@/lib/auth";
+import { canManageColumns } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/activity";
 import { fail, handleRouteError, ok } from "@/lib/http";
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       where: { id: boardId },
       include: { columns: { select: { id: true } } },
     });
-    if (!board || (board.ownerId ? board.ownerId !== user.id : user.role.name !== RoleName.ADMIN)) {
+    if (!board || (board.ownerId ? board.ownerId !== user.id : !canManageColumns(user))) {
       return fail("Недостаточно прав для изменения порядка колонок", 403);
     }
 

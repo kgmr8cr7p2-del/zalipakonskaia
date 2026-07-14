@@ -17,7 +17,7 @@ export async function PATCH(request: Request, { params }: Params) {
       include: { checklist: { include: { task: { include: { assignees: { select: { userId: true } } } } } } },
     });
     if (!existing) return fail("Пункт не найден", 404);
-    const access = await canAccessTask(user.id, existing.checklist.taskId);
+    const access = await canAccessTask(user, existing.checklist.taskId);
     if (!access) return fail("Пункт не найден", 404);
     if (access.column.board.ownerId !== user.id && !canEditTask(user, existing.checklist.task)) return fail("Недостаточно прав", 403);
     const body = await request.json();
@@ -49,7 +49,7 @@ export async function DELETE(_: Request, { params }: Params) {
       include: { checklist: { include: { task: { include: { assignees: { select: { userId: true } } } } } } },
     });
     if (!existing) return fail("Пункт не найден", 404);
-    const access = await canAccessTask(user.id, existing.checklist.taskId);
+    const access = await canAccessTask(user, existing.checklist.taskId);
     if (!access) return fail("Пункт не найден", 404);
     if (access.column.board.ownerId !== user.id && !canEditTask(user, existing.checklist.task)) return fail("Недостаточно прав", 403);
     await prisma.checklistItem.delete({ where: { id } });

@@ -12,7 +12,7 @@ export async function DELETE(_: Request, { params }: Params) {
     const { id } = await params;
     const comment = await prisma.comment.findUnique({ where: { id } });
     if (!comment) return fail("Комментарий не найден", 404);
-    if (!(await canAccessTask(user.id, comment.taskId))) return fail("Комментарий не найден", 404);
+    if (!(await canAccessTask(user, comment.taskId))) return fail("Комментарий не найден", 404);
     if (!canDeleteComment(user, comment.authorId)) return fail("Недостаточно прав", 403);
     await prisma.comment.delete({ where: { id } });
     return ok({ ok: true });
