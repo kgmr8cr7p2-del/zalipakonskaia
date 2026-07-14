@@ -113,7 +113,7 @@ export async function PATCH(request: Request, { params }: Params) {
         details: { field: "oilDepot", oldValue: existing.oilDepot?.name ?? null, newValue: task.oilDepot?.name ?? null },
       });
     }
-    if (!isPersonalBoard && changes.includes(ActivityAction.STATUS_CHANGED)) {
+    if (!isPersonalBoard && task.priority !== "PLANNED" && changes.includes(ActivityAction.STATUS_CHANGED)) {
       await notifyTelegram("status_changed", [
         `Задача: ${task.title}`,
         `Было: ${existing.column.name}`,
@@ -124,7 +124,7 @@ export async function PATCH(request: Request, { params }: Params) {
         triggerTaskCompletionSoundEvent();
       }
     }
-    if (!isPersonalBoard && changes.includes(ActivityAction.ASSIGNEE_CHANGED)) {
+    if (!isPersonalBoard && task.priority !== "PLANNED" && changes.includes(ActivityAction.ASSIGNEE_CHANGED)) {
       await notifyTelegram("assignee_changed", formatAssigneeChangedMessage(task, user), task.assignees.map((item) => item.userId));
     }
     return ok({ task });

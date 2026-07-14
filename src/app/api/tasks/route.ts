@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       taskId: task.id,
       details: { title: task.title },
     });
-    if (!isPersonalBoard) {
+    if (!isPersonalBoard && input.priority !== "PLANNED") {
       await notifyTelegram(
         "task_created",
         formatTaskCreatedMessage(taskWithDetails, user, initialComment),

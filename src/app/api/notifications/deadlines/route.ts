@@ -19,6 +19,7 @@ export async function POST(request: Request) {
         id: true,
         taskNumber: true,
         title: true,
+        priority: true,
         deadline: true,
         reminderDaysBefore: true,
         column: { select: { name: true, board: { select: { id: true, name: true, ownerId: true } } } },
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
     });
 
     const due = tasks.filter((task) => {
-      if (!task.deadline || task.reminderDaysBefore == null || isClosedColumn(task.column.name)) return false;
+      if (task.priority === "PLANNED" || !task.deadline || task.reminderDaysBefore == null || isClosedColumn(task.column.name)) return false;
       return reminderAt(task.deadline, task.reminderDaysBefore) <= now && deadlineEnd(task.deadline) >= now;
     });
 
@@ -51,11 +52,12 @@ async function dispatchReminder(task: {
   id: string;
   taskNumber: number;
   title: string;
+  priority: string;
   deadline: Date | null;
   reminderDaysBefore: number | null;
   column: { name: string; board: { id: string; name: string; ownerId: string | null } };
 }) {
-  if (!task.deadline || task.reminderDaysBefore == null) return "failed" as const;
+  if (task.priority === "PLANNED" || !task.deadline || task.reminderDaysBefore == null) return "failed" as const;
   const deadlineKey = task.deadline.toISOString().slice(0, 10);
   const dispatchKey = `task-reminder:${task.id}:${deadlineKey}:${task.reminderDaysBefore}`;
 
