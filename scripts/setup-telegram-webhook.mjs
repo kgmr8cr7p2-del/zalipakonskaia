@@ -11,6 +11,23 @@ if (!appUrl) throw new Error("APP_URL is not configured");
 if (!appUrl.startsWith("https://")) throw new Error("APP_URL must use HTTPS for a Telegram webhook");
 
 const webhookUrl = `${appUrl}/api/telegram/webhook`;
+if (secret) {
+  const probe = await fetch(webhookUrl, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-telegram-bot-api-secret-token": secret,
+    },
+    body: "{}",
+  });
+  if (!probe.ok) {
+    throw new Error(`Telegram webhook secret probe failed: HTTP ${probe.status}`);
+  }
+}
+
+// Recreate the webhook so Telegram cannot keep a secret from an older release.
+// Pending updates are preserved and delivered after the new secret is registered.
+await callTelegram("deleteWebhook", { drop_pending_updates: false });
 await callTelegram("setWebhook", {
   url: webhookUrl,
   allowed_updates: ["message"],
