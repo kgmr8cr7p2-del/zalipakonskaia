@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { getNotificationSoundVolume, primeNotificationSound } from "@/lib/chat-notification";
 
 const LAST_TASK_SOUND_EVENT_KEY = "team-kanban-last-task-sound-event";
 const TASK_SOUND_LOCK_NAME = "team-kanban-task-sound-playback";
-const EVENT_MAX_AGE_MS = 45 * 1000;
+const EVENT_MAX_AGE_MS = 5 * 60 * 1000;
 
 export function TaskSoundNotifier() {
   const playedEventsRef = useRef(new Set<string>());
@@ -33,17 +34,17 @@ export function TaskSoundNotifier() {
       }
     };
 
-    const visibilityHandler = () => {
-      if (document.visibilityState === "visible") void checkTaskSound();
-    };
+    const unlockHandler = () => { void primeNotificationSound(); };
 
     void checkTaskSound();
     const timer = window.setInterval(() => void checkTaskSound(), 2000);
-    document.addEventListener("visibilitychange", visibilityHandler);
+    window.addEventListener("pointerdown", unlockHandler, { once: true, passive: true });
+    window.addEventListener("keydown", unlockHandler, { once: true });
 
     return () => {
       window.clearInterval(timer);
-      document.removeEventListener("visibilitychange", visibilityHandler);
+      window.removeEventListener("pointerdown", unlockHandler);
+      window.removeEventListener("keydown", unlockHandler);
     };
   }, []);
 
@@ -79,7 +80,7 @@ function playOnce(soundUrl: string) {
   return new Promise<void>((resolve) => {
     const audio = new Audio(soundUrl);
     audio.preload = "auto";
-    audio.volume = 0.5;
+    audio.volume = getNotificationSoundVolume();
     audio.currentTime = 0;
     audio.addEventListener("ended", () => resolve(), { once: true });
     audio.addEventListener("error", () => resolve(), { once: true });

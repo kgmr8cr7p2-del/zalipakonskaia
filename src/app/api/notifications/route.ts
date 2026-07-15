@@ -1,11 +1,10 @@
-import { PermissionKey } from "@prisma/client";
-import { requirePermission } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { fail, handleRouteError, ok } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
-    const user = await requirePermission(PermissionKey.USE_CHATS);
+    const user = await requireVerifiedUser();
     const params = new URL(request.url).searchParams;
     const limit = Math.min(Math.max(Number(params.get("limit") || 30), 1), 100);
     const unreadOnly = params.get("unread") === "1";
@@ -25,7 +24,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const user = await requirePermission(PermissionKey.USE_CHATS);
+    const user = await requireVerifiedUser();
     const body = await request.json().catch(() => ({}));
     if (body?.action !== "read-all") return fail("Неизвестное действие", 400);
     await prisma.notification.updateMany({ where: { userId: user.id, readAt: null }, data: { readAt: new Date() } });

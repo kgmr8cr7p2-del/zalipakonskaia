@@ -3,6 +3,7 @@ import type { CurrentUser } from "@/lib/auth";
 import { AppNav } from "@/components/AppNav";
 import { GoidaReminder } from "@/components/GoidaReminder";
 import { TaskSoundNotifier } from "@/components/TaskSoundNotifier";
+import { NotificationSoundNotifier } from "@/components/NotificationSoundNotifier";
 import { WeeklyReportReminder } from "@/components/WeeklyReportReminder";
 import { PresenceTracker } from "@/components/PresenceTracker";
 
@@ -22,6 +23,7 @@ export function AppShell({ user, children }: { user: CurrentUser; children: Reac
       {user.approvedAt ? (
         <>
           <TaskSoundNotifier />
+          <NotificationSoundNotifier />
           <GoidaReminder />
           <WeeklyReportReminder />
           <PresenceTracker />

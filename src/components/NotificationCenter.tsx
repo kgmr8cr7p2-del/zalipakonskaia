@@ -1,8 +1,7 @@
 "use client";
 
-import { Bell, CheckCheck, Volume2, VolumeX } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getNotificationSoundVolume, isNotificationSoundEnabled, playChatNotification, setNotificationSoundPreferences } from "@/lib/chat-notification";
 
 type Notice = { id: string; type: string; title: string; body: string; href: string | null; readAt: string | null; createdAt: string };
 
@@ -10,28 +9,14 @@ export function NotificationCenter({ fullPage = false }: { fullPage?: boolean })
   const [items, setItems] = useState<Notice[]>([]);
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(fullPage);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [volume, setVolume] = useState(0.06);
-
-  useEffect(() => {
-    setSoundEnabled(isNotificationSoundEnabled());
-    setVolume(getNotificationSoundVolume());
-  }, []);
-
   useEffect(() => {
     let active = true;
-    let previousUnread = 0;
     async function refresh() {
       const response = await fetch("/api/notifications?limit=40", { cache: "no-store" }).catch(() => null);
       if (!response?.ok) return;
       const payload = await response.json().catch(() => ({}));
       if (!active) return;
       const nextUnread = Number(payload.unreadCount) || 0;
-      if (nextUnread > previousUnread && previousUnread !== 0) {
-        const latest = payload.notifications?.find((item: Notice) => !item.readAt);
-        void playChatNotification(latest?.type === "MENTION" ? "mention" : "chat");
-      }
-      previousUnread = nextUnread;
       setUnread(nextUnread);
       setItems(Array.isArray(payload.notifications) ? payload.notifications : []);
     }
@@ -52,25 +37,10 @@ export function NotificationCenter({ fullPage = false }: { fullPage?: boolean })
     setUnread(0);
   }
 
-  function toggleSound() {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    setNotificationSoundPreferences(next, volume);
-  }
-
-  function updateVolume(next: number) {
-    setVolume(next);
-    setNotificationSoundPreferences(soundEnabled, next);
-  }
-
   const content = <div className={fullPage ? "notification-page-card" : "notification-popover"}>
     <div className="notification-popover-head">
       <div><strong>Центр уведомлений</strong><small>{unread ? `${unread} непрочитанных` : "Всё прочитано"}</small></div>
       {unread ? <button className="button ghost compact-button" type="button" onClick={() => void markAllRead()}><CheckCheck size={15} />Прочитать все</button> : null}
-    </div>
-    <div className="notification-sound-settings">
-      <button className="button ghost compact-button" type="button" onClick={toggleSound} aria-pressed={soundEnabled}>{soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}Звуки</button>
-      <label className="notification-volume"><span className="visually-hidden">Громкость уведомлений</span><input type="range" min="0" max="0.15" step="0.01" value={volume} onChange={(event) => updateVolume(Number(event.currentTarget.value))} /></label>
     </div>
     <div className="notification-list">
       {items.length ? items.map((item) => <a className={`notification-item ${item.readAt ? "" : "is-unread"}`} href={item.href || "#"} key={item.id} onClick={() => void markRead(item.id)}>

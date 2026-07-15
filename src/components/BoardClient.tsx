@@ -432,6 +432,10 @@ export function BoardClient({ initialView }: { initialView: View }) {
         <div className="board-notification-control">
           <NotificationCenter />
         </div>
+        <button className="button secondary compact-button mobile-optional" type="button" onClick={() => void toggleFocusMode()} title="Открыть режим просмотра доски">
+          <Expand size={17} />
+          Доска
+        </button>
         <a className="button secondary compact-button mobile-optional" href="/board/tv" title="TV-режим для офисного экрана">
           <Monitor size={17} />
           TV
@@ -982,7 +986,7 @@ function TaskDialog(props: {
             ))}
           </div>
           <form className="toolbar chat-composer" action={props.onAddComment}>
-            <input className="input" name="text" placeholder="Добавить комментарий" required />
+            <MentionTextarea users={props.view.users} />
             <button className="button secondary">
               <MessageSquare size={17} />
               Отправить

@@ -1,10 +1,12 @@
 import { PermissionKey } from "@prisma/client";
-import { Settings2 } from "lucide-react";
+import { Bell, Building2, Database, MessageCircle, Settings2, Volume2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { BoardSettings } from "@/components/BoardSettings";
 import { GoidaTestButton } from "@/components/GoidaTestButton";
+import { NotificationSoundSettings } from "@/components/NotificationSoundSettings";
 import { OilDepotSettings } from "@/components/OilDepotSettings";
 import { PersonalBoardSettings } from "@/components/PersonalBoardSettings";
+import { SettingsHub, type SettingsPanel } from "@/components/SettingsHub";
 import { TelegramConnectPanel } from "@/components/TelegramConnectPanel";
 import { requireVerifiedUser } from "@/lib/auth";
 import { getBoardView } from "@/lib/board-data";
@@ -31,33 +33,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <h1>Настройки Taskora</h1>
           <p>Управляйте досками, справочниками и подключением личных Telegram-уведомлений.</p>
         </header>
-        {hasPermission(user, PermissionKey.USE_TELEGRAM) ? (
-          <TelegramConnectPanel connected={Boolean(telegramConnection?.enabled)} botLink={botLink} />
-        ) : null}
-        <div className="settings-managers">
-          {canViewBoards ? <PersonalBoardSettings initialBoards={JSON.parse(JSON.stringify((view?.availableBoards ?? []).filter((board: any) => board.ownerId === user.id)))} /> : null}
-          {selectedBoard ? (
-            <BoardSettings
-              boardId={selectedBoard.id}
-              boardName={selectedBoard.name}
-              boards={JSON.parse(JSON.stringify(view?.availableBoards ?? []))}
-              columns={JSON.parse(JSON.stringify(selectedBoard.columns))}
-              canManage={selectedBoard.ownerId === user.id || hasPermission(user, PermissionKey.MANAGE_COLUMNS)}
-            />
-          ) : null}
-          <OilDepotSettings oilDepots={JSON.parse(JSON.stringify(view?.oilDepots ?? []))} canManage={hasPermission(user, PermissionKey.MANAGE_WORKSPACE)} />
-        </div>
-        {user.email.toLowerCase() === "les_victor@mail.ru" ? (
-          <section className="settings-utilities">
-            <div className="settings-block goida-test-panel">
-              <div>
-                <h2>Проверка уведомления</h2>
-                <p className="muted">Личный тест вечернего уведомления: звук проиграется один раз, окно закроется примерно через 15 секунд.</p>
-              </div>
-              <GoidaTestButton />
-            </div>
-          </section>
-        ) : null}
+        <SettingsHub panels={[
+          ...(hasPermission(user, PermissionKey.USE_TELEGRAM) ? [{ id: "telegram", title: "Telegram-уведомления", description: "Подключение личного чата с ботом", icon: MessageCircle, content: <TelegramConnectPanel connected={Boolean(telegramConnection?.enabled)} botLink={botLink} /> }] : []),
+          { id: "sounds", title: "Звуки уведомлений", description: "Громкость, включение и проверка звука", icon: Volume2, content: <NotificationSoundSettings /> },
+          ...(canViewBoards ? [{ id: "personal-boards", title: "Личные доски", description: "Создание и порядок ваших личных досок", icon: Bell, content: <PersonalBoardSettings initialBoards={JSON.parse(JSON.stringify((view?.availableBoards ?? []).filter((board: any) => board.ownerId === user.id)))} /> }] : []),
+          ...(selectedBoard ? [{ id: "board", title: "Рабочая доска", description: "Колонки и параметры выбранной доски", icon: Database, content: <BoardSettings boardId={selectedBoard.id} boardName={selectedBoard.name} boards={JSON.parse(JSON.stringify(view?.availableBoards ?? []))} columns={JSON.parse(JSON.stringify(selectedBoard.columns))} canManage={selectedBoard.ownerId === user.id || hasPermission(user, PermissionKey.MANAGE_COLUMNS)} /> }] : []),
+          { id: "depots", title: "Нефтебазы", description: "Справочник объектов рабочего пространства", icon: Building2, content: <OilDepotSettings oilDepots={JSON.parse(JSON.stringify(view?.oilDepots ?? []))} canManage={hasPermission(user, PermissionKey.MANAGE_WORKSPACE)} /> },
+          ...(user.email.toLowerCase() === "les_victor@mail.ru" ? [{ id: "test", title: "Проверка уведомлений", description: "Тестовое вечернее уведомление", icon: Bell, content: <div className="settings-block goida-test-panel"><div><h2>Проверка уведомления</h2><p className="muted">Личный тест вечернего уведомления.</p></div><GoidaTestButton /></div> }] : []),
+        ] satisfies SettingsPanel[]} />
       </div>
     </AppShell>
   );

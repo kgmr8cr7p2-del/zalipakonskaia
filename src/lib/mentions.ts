@@ -3,7 +3,11 @@ import { prisma } from "@/lib/prisma";
 const mentionPattern = /@([\p{L}\p{N}._-]{2,40})/gu;
 
 export function extractMentionTokens(text: string) {
-  return Array.from(text.matchAll(mentionPattern), (match) => match[1].toLocaleLowerCase("ru-RU"));
+  return Array.from(text.matchAll(mentionPattern), (match) => normalizeMentionValue(match[1]));
+}
+
+function normalizeMentionValue(value: string) {
+  return value.replace(/^@/, "").replace(/[.,!?;:()[\]{}]+$/gu, "").trim().toLocaleLowerCase("ru-RU");
 }
 
 export async function resolveMentionedUserIds(text: string, excludeUserId?: string) {
@@ -17,8 +21,9 @@ export async function resolveMentionedUserIds(text: string, excludeUserId?: stri
   const ids = new Set<string>();
   for (const user of users) {
     const candidates = [user.handle, user.name, user.firstName, user.lastName, user.middleName]
-      .flatMap((value) => value.split(/\s+/))
-      .map((value) => value.replace(/^@/, "").trim().toLocaleLowerCase("ru-RU"))
+      .filter(Boolean)
+      .flatMap((value) => [value, ...value.split(/\s+/)])
+      .map((value) => normalizeMentionValue(value))
       .filter(Boolean);
     if (candidates.some((candidate) => tokens.has(candidate))) ids.add(user.id);
   }

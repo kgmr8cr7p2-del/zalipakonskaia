@@ -53,7 +53,7 @@ export async function DELETE(request: Request, { params }: Params) {
     const replacementRoleId = typeof body?.replacementRoleId === "string" ? body.replacementRoleId : "";
     const role = await prisma.role.findUnique({ where: { id }, include: { _count: { select: { users: true, userInvites: true } } } });
     if (!role) return fail("Роль не найдена", 404);
-    if (role.systemKey) return fail("Встроенную роль нельзя удалить", 422);
+    if (role.systemKey === "ADMIN") return fail("Защищённую роль администратора нельзя удалить", 422);
     if (role._count.users || role._count.userInvites) {
       if (!replacementRoleId || replacementRoleId === id) return fail("Выберите роль для переназначения пользователей перед удалением", 422);
       const replacementRole = await prisma.role.findUnique({ where: { id: replacementRoleId } });

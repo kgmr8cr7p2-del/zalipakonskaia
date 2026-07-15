@@ -128,6 +128,29 @@ body {
 .notification-popover { max-inline-size: calc(100vw - 1rem); overflow-wrap: anywhere; }
 .notification-sound-settings, .notification-open-link { border-color: var(--border); }
 .notification-item:hover, .notification-item.is-unread { background: color-mix(in oklch, var(--brand) 8%, var(--panel)); }
+.settings-hub { display: grid; gap: 1rem; }
+.settings-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+.settings-choice { display: grid; grid-template-columns: 2.7rem minmax(0, 1fr) auto; align-items: center; gap: .8rem; min-inline-size: 0; padding: 1rem; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); color: var(--text); text-align: start; cursor: pointer; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+.settings-choice:hover, .settings-choice:focus-visible { border-color: color-mix(in oklch, var(--brand) 45%, var(--border)); background: color-mix(in oklch, var(--brand) 6%, var(--panel)); transform: translateY(-1px); outline: none; }
+.settings-choice-icon { display: grid; place-items: center; inline-size: 2.7rem; block-size: 2.7rem; border-radius: 10px; background: color-mix(in oklch, var(--brand) 12%, var(--panel)); color: var(--brand-strong); }
+.settings-choice-copy { display: grid; gap: .22rem; min-inline-size: 0; }
+.settings-choice-copy strong { font-size: .9rem; }
+.settings-choice-copy small { color: var(--muted); font-size: .75rem; line-height: 1.35; }
+.settings-choice-arrow { color: var(--muted); font-size: 1.2rem; }
+.settings-dialog-backdrop { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgb(15 23 42 / 34%); backdrop-filter: blur(4px); }
+.settings-dialog { display: grid; grid-template-rows: auto minmax(0, 1fr); inline-size: min(960px, 100%); max-block-size: min(88dvh, 900px); overflow: hidden; border: 1px solid var(--border); border-radius: 18px; background: var(--panel); box-shadow: 0 24px 70px rgb(15 23 42 / 24%); }
+.settings-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.35rem; border-block-end: 1px solid var(--border); }
+.settings-dialog-head h2 { margin-top: .35rem; font-family: var(--font-unbounded), var(--font-ui); font-size: 1.2rem; letter-spacing: -.05em; }
+.settings-dialog-head p { margin-top: .3rem; font-size: .82rem; }
+.settings-dialog-body { min-block-size: 0; overflow: auto; padding: 1.2rem; overscroll-behavior: contain; }
+.settings-dialog-body > * { margin: 0; }
+.settings-sound-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem); gap: 1.25rem; padding: 1rem; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
+.settings-sound-copy { display: grid; align-content: start; gap: .55rem; }
+.settings-sound-copy h2 { font-size: 1.05rem; }
+.settings-sound-copy p { max-inline-size: 60ch; font-size: .82rem; line-height: 1.45; }
+.settings-sound-actions { display: grid; align-content: start; gap: .7rem; }
+.settings-volume-control { display: grid; gap: .35rem; color: var(--muted); font-size: .76rem; font-weight: 750; }
+.settings-volume-control input { inline-size: 100%; accent-color: var(--brand); }
 .board-notification-control { display: inline-flex; align-items: center; min-inline-size: 2.7rem; }
 .board-notification-control .notification-center { display: inline-flex; }
 .board-notification-control .nav-notification-button { inline-size: 2.7rem; block-size: 2.7rem; border-color: var(--border); background: var(--panel); }
@@ -179,6 +202,8 @@ body {
   .board-sort-control, .board-sort-control .compact-select, .board-head > .create-task-button { inline-size: 100%; justify-self: stretch; max-inline-size: none; }
   .sidebar-account-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .board-notification-control { justify-self: start; }
+  .settings-choice-grid { grid-template-columns: 1fr; }
+  .settings-sound-card { grid-template-columns: 1fr; }
 }
 
 @media (min-width: 901px) and (max-width: 1399px) {
@@ -203,6 +228,10 @@ body {
   .notification-popover { position: fixed; inset-inline: .5rem auto; inset-block-start: auto; inset-block-end: calc(4.5rem + env(safe-area-inset-bottom)); inline-size: min(420px, calc(100vw - 1rem)); }
   .board-quick-filters { flex-wrap: wrap; }
   .board-quick-filters .button { flex: 1 1 100%; }
+  .settings-dialog-backdrop { align-items: end; padding: .5rem; }
+  .settings-dialog { max-block-size: calc(100dvh - 1rem); border-radius: 16px; }
+  .settings-dialog-head { padding: 1rem; }
+  .settings-dialog-body { padding: .75rem; }
 }
 
 @media (max-width: 900px) {

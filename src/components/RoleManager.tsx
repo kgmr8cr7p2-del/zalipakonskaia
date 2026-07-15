@@ -89,7 +89,7 @@ export function RoleManager({ initialRoles }: { initialRoles: RoleItem[] }) {
   }
 
   async function deleteRole() {
-    if (!selected || selected.systemKey || !window.confirm(`Удалить роль «${selected.name}»?`)) return;
+    if (!selected || selected.systemKey === "ADMIN" || !window.confirm(`Удалить роль «${selected.name}»?`)) return;
     const assignedCount = (selected._count?.users ?? 0) + (selected._count?.userInvites ?? 0);
     const replacement = roles.find((role) => role.id !== selected.id && role.systemKey === "MANAGER")
       ?? roles.find((role) => role.id !== selected.id && role.systemKey === "EXECUTOR")
@@ -155,12 +155,12 @@ export function RoleManager({ initialRoles }: { initialRoles: RoleItem[] }) {
           <header className="role-editor-head">
             <div><span className="role-editor-label">Редактирование роли</span><h3>{selected.name}{dirtyRoleIds.has(selected.id) ? <span className="role-unsaved">Есть несохранённые изменения</span> : null}</h3><p className="muted">{selected.systemKey === "ADMIN" ? "Системный администратор получает полный доступ автоматически." : `${enabledCount} из ${permissionOptions.length} доступов включено`}</p></div>
             <div className="role-editor-actions">
-              {!selected.systemKey ? <button className="button ghost danger-text" type="button" onClick={() => void deleteRole()} disabled={saving}><Trash2 size={16} />Удалить</button> : null}
+              {selected.systemKey !== "ADMIN" ? <button className="button ghost danger-text" type="button" onClick={() => void deleteRole()} disabled={saving}><Trash2 size={16} />Удалить</button> : null}
               <button className="button" type="button" onClick={() => void saveRole()} disabled={saving}><Save size={16} />{saving ? "Сохраняем" : "Сохранить"}</button>
             </div>
           </header>
           <label className="field role-name-field"><span className="label">Название роли</span><input className="input" value={selected.name} minLength={2} maxLength={60} disabled={selected.systemKey === "ADMIN"} onChange={(event) => updateSelected({ name: event.currentTarget.value })} /></label>
-          {!selected.systemKey && ((selected._count?.users ?? 0) + (selected._count?.userInvites ?? 0) > 0) ? <p className="role-danger-note">При удалении назначенные пользователи и приглашения будут переназначены на роль «Менеджер» или «Исполнитель».</p> : null}
+          {selected.systemKey !== "ADMIN" && ((selected._count?.users ?? 0) + (selected._count?.userInvites ?? 0) > 0) ? <p className="role-danger-note">При удалении назначенные пользователи и приглашения будут переназначены на роль «Менеджер» или «Исполнитель».</p> : null}
           <div className="permission-groups">
             {permissionGroups.map((group) => <section className="permission-group" key={group.key}>
               <header><div><h4>{group.label}</h4><p>{group.keys.length} разрешения</p></div></header>

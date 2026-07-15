@@ -86,7 +86,7 @@ export function AppNav({ user }: { user: CurrentUser }) {
             <ProfileAvatar name={profile.name} avatarUrl={profile.avatarUrl} size={40} />
             <span className="sidebar-profile-copy"><strong>{profile.name}</strong><small>{profile.jobTitle || "Изменить профиль"}</small></span>
           </Link>
-          <div className="sidebar-account-actions">{canUseChats ? <NotificationCenter /> : null}<ThemeToggle icon={<Moon size={18} aria-hidden="true" />} /><LogoutButton /></div>
+          <div className="sidebar-account-actions"><ThemeToggle icon={<Moon size={18} aria-hidden="true" />} /><LogoutButton /></div>
         </div>
       </nav>
 
@@ -106,7 +106,7 @@ export function AppNav({ user }: { user: CurrentUser }) {
               <Link aria-current={pathname === href ? "page" : undefined} href={href} key={href}><Icon size={19} aria-hidden="true" />{label}</Link>
             ))}
             <div className="mobile-nav-menu-actions">
-              {canUseChats ? <NotificationCenter /> : null}<ThemeToggle icon={<Moon size={19} aria-hidden="true" />} /><LogoutButton />
+              {hasAccess ? <NotificationCenter /> : null}<ThemeToggle icon={<Moon size={19} aria-hidden="true" />} /><LogoutButton />
             </div>
           </div>
         </details>
