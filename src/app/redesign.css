@@ -162,9 +162,9 @@ body {
 .board-topbar .filters-live { min-inline-size: 0; }
 
 /* Keep account tools in one predictable row instead of an orphaned third item. */
-.sidebar-account-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
+.sidebar-account-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
 .sidebar-account-actions > *, .sidebar-account-actions .notification-center { min-inline-size: 0; }
-.sidebar-account-actions button { min-inline-size: 0; padding-inline: .35rem; }
+.sidebar-account-actions button { min-inline-size: 0; padding-inline: .35rem; white-space: nowrap; }
 .mobile-nav-menu-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; }
 .mobile-nav-menu-actions > *, .mobile-nav-menu-actions .notification-center { min-inline-size: 0; }
 .mobile-nav-menu-actions button { inline-size: 100%; justify-content: center; padding-inline: .45rem; }

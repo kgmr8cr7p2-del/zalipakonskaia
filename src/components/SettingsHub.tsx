@@ -1,16 +1,17 @@
 "use client";
 
-import { X } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Bell, Building2, Database, MessageCircle, Volume2, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 export type SettingsPanel = {
   id: string;
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: "bell" | "building" | "database" | "message" | "volume";
   content: ReactNode;
 };
+
+const icons = { bell: Bell, building: Building2, database: Database, message: MessageCircle, volume: Volume2 } as const;
 
 export function SettingsHub({ panels }: { panels: SettingsPanel[] }) {
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export function SettingsHub({ panels }: { panels: SettingsPanel[] }) {
     <section className="settings-hub" aria-label="Разделы настроек">
       <div className="settings-choice-grid">
         {panels.map((panel) => {
-          const Icon = panel.icon;
+          const Icon = icons[panel.icon];
           return <button className="settings-choice" type="button" key={panel.id} onClick={() => setActiveId(panel.id)}>
             <span className="settings-choice-icon"><Icon size={20} /></span>
             <span className="settings-choice-copy"><strong>{panel.title}</strong><small>{panel.description}</small></span>
