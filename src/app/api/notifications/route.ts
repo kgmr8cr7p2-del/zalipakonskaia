@@ -33,3 +33,19 @@ export async function POST(request: Request) {
     return handleRouteError(error);
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const user = await requireVerifiedUser();
+    if (!hasTrustedOrigin(request)) return fail("Недопустимый источник запроса", 403);
+    const result = await prisma.notification.deleteMany({ where: { userId: user.id } });
+    return ok({ deletedCount: result.count });
+  } catch (error) {
+    return handleRouteError(error);
+  }
+}
+
+function hasTrustedOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  return origin === new URL(request.url).origin;
+}

@@ -128,6 +128,13 @@ body {
 .notification-popover { max-inline-size: calc(100vw - 1rem); overflow-wrap: anywhere; }
 .notification-sound-settings, .notification-open-link { border-color: var(--border); }
 .notification-item:hover, .notification-item.is-unread { background: color-mix(in oklch, var(--brand) 8%, var(--panel)); }
+.notification-popover-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .35rem; }
+.notification-item { grid-template-columns: .5rem minmax(0, 1fr) 2rem; align-items: start; }
+.notification-item-link { min-inline-size: 0; color: inherit; text-decoration: none; }
+.notification-item-link strong, .notification-item-link span, .notification-item-link small { display: block; }
+.notification-delete-button { display: grid; place-items: center; inline-size: 2rem; block-size: 2rem; border: 0; border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer; }
+.notification-delete-button:hover, .notification-delete-button:focus-visible { outline: none; background: color-mix(in oklch, var(--danger) 10%, var(--panel)); color: var(--danger); }
+.notification-error { margin-block: .6rem 0; }
 .settings-hub { display: grid; gap: 1rem; }
 .settings-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
 .settings-choice { display: grid; grid-template-columns: 2.7rem minmax(0, 1fr) auto; align-items: center; gap: .8rem; min-inline-size: 0; padding: 1rem; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); color: var(--text); text-align: start; cursor: pointer; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
