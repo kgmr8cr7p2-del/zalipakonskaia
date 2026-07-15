@@ -37,6 +37,9 @@ export function middleware(request: NextRequest) {
 
   const fetchSite = request.headers.get("sec-fetch-site");
   if (fetchSite === "cross-site") return forbidden();
+  if (fetchSite === "same-origin") {
+    return NextResponse.next();
+  }
 
   const source = request.headers.get("origin") ?? request.headers.get("referer");
   if (!source) return forbidden();
