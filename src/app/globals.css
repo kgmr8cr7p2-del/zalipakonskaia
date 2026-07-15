@@ -6923,9 +6923,40 @@
     }
 
     .topbar {
+      align-items: stretch;
       min-block-size: 48px;
       gap: .45rem;
       padding: .42rem .7rem;
+    }
+
+    .board-topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+      align-items: center;
+      min-block-size: auto;
+      overflow: visible;
+    }
+
+    .board-topbar .spacer {
+      display: none;
+    }
+
+    .board-topbar .filters-live {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns:
+        minmax(10.5rem, 1.35fr)
+        minmax(9rem, 1fr)
+        minmax(7.5rem, .85fr)
+        minmax(8.5rem, .95fr)
+        minmax(7.75rem, .85fr)
+        auto;
+      inline-size: 100%;
+      align-items: center;
+    }
+
+    .board-topbar > .mobile-optional {
+      justify-self: start;
     }
 
     .content {
@@ -6951,19 +6982,30 @@
     }
 
     .search-shell {
-      inline-size: 10.5rem;
-      min-inline-size: 10.5rem;
+      inline-size: 100%;
+      min-inline-size: 0;
     }
 
     .compact-select {
+      inline-size: 100%;
       min-inline-size: 7.35rem;
       max-inline-size: 9.8rem;
       font-size: .78rem;
     }
 
+    .board-topbar .compact-select,
+    .board-topbar .depot-filter {
+      max-inline-size: none;
+    }
+
     .depot-filter {
+      inline-size: 100%;
       min-inline-size: 9.5rem;
       max-inline-size: 11.2rem;
+    }
+
+    .reset-filter-button {
+      justify-self: start;
     }
 
     .compact-button,
@@ -6988,7 +7030,7 @@
     }
 
     .board {
-      min-block-size: calc(100dvh - 144px);
+      min-block-size: calc(100dvh - 178px);
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 13.75rem), 1fr));
       gap: .6rem;
     }
@@ -7058,6 +7100,26 @@
   }
 
   @media (width <= 1180px) {
+    .board-topbar {
+      grid-template-columns: repeat(4, auto) minmax(0, 1fr);
+    }
+
+    .board-topbar .filters-live {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .filters-live .search {
+      max-inline-size: none;
+    }
+
+    .board-topbar .reset-filter-button {
+      inline-size: 100%;
+    }
+
+    .board-topbar > .sync-pill {
+      display: none;
+    }
+
     .task-modal-layout {
       grid-template-columns: 1fr;
     }

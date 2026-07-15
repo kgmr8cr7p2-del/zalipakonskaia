@@ -12,7 +12,7 @@ import type { CurrentUser } from "@/lib/auth";
 const links = [
   { href: "/board", label: "Доска", icon: LayoutDashboard, permission: "VIEW_BOARD" },
   { href: "/chats", label: "Чаты", icon: MessageCircle, permission: "USE_CHATS" },
-  { href: "/files", label: "Документы", icon: Files, permission: "VIEW_FILES" },
+  { href: "/files", label: "Документы", icon: Files },
   { href: "/reports", label: "Отчёты", icon: BarChart3, permission: "VIEW_REPORTS" },
   { href: "/history", label: "История", icon: History, permission: "VIEW_HISTORY" },
   { href: "/changelog", label: "Что нового", icon: ScrollText },
