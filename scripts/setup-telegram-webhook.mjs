@@ -34,15 +34,15 @@ await callTelegram("setWebhook", {
   drop_pending_updates: false,
   ...(secret ? { secret_token: secret } : {}),
 });
-await callTelegram("setMyCommands", {
+await callTelegramOptional("setMyCommands", {
   commands: [{ command: "start", description: "Подключить уведомления" }],
 });
-await callTelegram("setChatMenuButton", { menu_button: { type: "default" } });
-await callTelegram("setMyName", { name: "Taskora · Личные напоминания" });
-await callTelegram("setMyDescription", {
+await callTelegramOptional("setChatMenuButton", { menu_button: { type: "default" } });
+await callTelegramOptional("setMyName", { name: "Taskora · Личные напоминания" });
+await callTelegramOptional("setMyDescription", {
   description: "Личные напоминания только о задачах с ваших личных досок Taskora.",
 });
-await callTelegram("setMyShortDescription", {
+await callTelegramOptional("setMyShortDescription", {
   short_description: "Напоминания с личных досок Taskora",
 });
 
@@ -57,6 +57,15 @@ async function callTelegram(method, payload) {
   const result = await response.json();
   if (!response.ok || !result.ok) {
     throw new Error(`Telegram ${method} failed: ${result.description ?? response.status}`);
+  }
+}
+
+async function callTelegramOptional(method, payload) {
+  try {
+    await callTelegram(method, payload);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Optional Telegram setup skipped: ${message}`);
   }
 }
 
