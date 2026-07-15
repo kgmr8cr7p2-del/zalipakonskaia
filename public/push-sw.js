@@ -11,6 +11,11 @@ self.addEventListener("push", (event) => {
     icon: payload.icon || "/taskora-icon.png",
     badge: payload.badge || "/taskora-icon.png",
     tag: payload.id ? `taskora-${payload.id}` : undefined,
+    timestamp: Number(payload.timestamp) || Date.now(),
+    lang: "ru",
+    renotify: Boolean(payload.id),
+    silent: false,
+    actions: [{ action: "open", title: "Открыть Taskora" }],
     data: { href: payload.href || "/notifications" },
   };
   event.waitUntil(self.registration.showNotification(title, options));

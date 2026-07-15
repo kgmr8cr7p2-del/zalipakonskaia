@@ -1,6 +1,6 @@
 "use client";
 
-import { BellRing, BellOff, CheckCircle2 } from "lucide-react";
+import { BellRing, BellOff, CheckCircle2, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type PushState = "checking" | "unsupported" | "blocked" | "disabled" | "enabled";
@@ -63,9 +63,27 @@ export function BrowserPushSettings() {
       const savePayload = await saveResponse.json().catch(() => ({}));
       if (!saveResponse.ok) throw new Error(savePayload.error || "Не удалось сохранить подписку");
       setState("enabled");
-      setMessage("Push-уведомления включены для этого браузера.");
+      try {
+        await requestTestPush();
+        setMessage("Push-уведомления включены. Тестовое уведомление отправлено в Windows.");
+      } catch (error) {
+        setMessage(`Push-уведомления включены, но тест не отправлен: ${error instanceof Error ? error.message : "неизвестная ошибка"}`);
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Не удалось включить push-уведомления");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function testPush() {
+    setBusy(true);
+    setMessage("");
+    try {
+      await requestTestPush();
+      setMessage("Тестовое уведомление отправлено. Если оно не появилось, проверьте уведомления Chrome и режим «Не беспокоить» в Windows.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Не удалось отправить тестовое уведомление");
     } finally {
       setBusy(false);
     }
@@ -115,11 +133,17 @@ export function BrowserPushSettings() {
       </div>
       <div className="browser-push-actions">
         {state === "enabled"
-          ? <button className="button secondary" type="button" disabled={busy} onClick={() => void disablePush()}><BellOff size={17} />Выключить</button>
+          ? <><button className="button secondary" type="button" disabled={busy} onClick={() => void testPush()}><Send size={17} />Проверить</button><button className="button secondary" type="button" disabled={busy} onClick={() => void disablePush()}><BellOff size={17} />Выключить</button></>
           : <button className="button" type="button" disabled={busy || state === "unsupported" || state === "blocked" || state === "checking"} onClick={() => void enablePush()}><BellRing size={17} />{busy ? "Подключаем…" : "Включить push"}</button>}
       </div>
     </div>
   );
+}
+
+async function requestTestPush() {
+  const response = await fetch("/api/push-subscriptions/test", { method: "POST" }).catch(() => null);
+  const payload = await response?.json().catch(() => ({}));
+  if (!response?.ok) throw new Error(payload?.error || "Не удалось отправить тестовое уведомление");
 }
 
 function supportsPush() {

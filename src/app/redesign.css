@@ -130,9 +130,10 @@ body {
 .notification-item:hover, .notification-item.is-unread { background: color-mix(in oklch, var(--brand) 8%, var(--panel)); }
 .notification-popover-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .35rem; }
 .notification-item { grid-template-columns: .5rem minmax(0, 1fr) 2rem; align-items: start; }
-.notification-item-link { min-inline-size: 0; color: inherit; text-decoration: none; }
+.notification-dot { grid-column: 1; grid-row: 1; }
+.notification-item-link { grid-column: 2; grid-row: 1; min-inline-size: 0; color: inherit; text-decoration: none; }
 .notification-item-link strong, .notification-item-link span, .notification-item-link small { display: block; }
-.notification-delete-button { display: grid; place-items: center; inline-size: 2rem; block-size: 2rem; border: 0; border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer; }
+.notification-delete-button { display: grid; grid-column: 3; grid-row: 1; place-items: center; inline-size: 2rem; block-size: 2rem; border: 0; border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer; }
 .notification-delete-button:hover, .notification-delete-button:focus-visible { outline: none; background: color-mix(in oklch, var(--danger) 10%, var(--panel)); color: var(--danger); }
 .notification-error { margin-block: .6rem 0; }
 .settings-hub { display: grid; gap: 1rem; }
@@ -165,7 +166,7 @@ body {
 .browser-push-icon { display: grid; inline-size: 3rem; block-size: 3rem; place-items: center; border-radius: 12px; background: var(--panel-2); color: var(--muted); }
 .browser-push-icon.is-enabled { background: color-mix(in oklch, var(--brand) 12%, var(--panel)); color: var(--brand-strong); }
 .browser-push-message { color: var(--brand-strong); font-size: .78rem; font-weight: 700; }
-.browser-push-actions { display: flex; justify-content: flex-end; }
+.browser-push-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; }
 .settings-dialog-body > .admin-users { margin-block-start: 0; }
 .settings-dialog-body > .role-manager { box-shadow: none; }
 .board-notification-control { display: inline-flex; align-items: center; min-inline-size: 2.7rem; }

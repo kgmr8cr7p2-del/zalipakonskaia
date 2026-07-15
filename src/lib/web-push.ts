@@ -21,7 +21,7 @@ export async function sendWebPushNotification(userId: string, notice: PushNotice
     where: { userId },
     select: { endpoint: true, p256dh: true, auth: true },
   });
-  if (!subscriptions.length) return;
+  if (!subscriptions.length) return { sent: 0, failed: 0 };
 
   configureWebPush();
   const payload = JSON.stringify({
@@ -31,16 +31,21 @@ export async function sendWebPushNotification(userId: string, notice: PushNotice
     href: notice.href || "/notifications",
     icon: "/taskora-icon.png",
     badge: "/taskora-icon.png",
+    timestamp: Date.now(),
   });
   const expiredEndpoints: string[] = [];
+  let sent = 0;
+  let failed = 0;
 
   await Promise.all(subscriptions.map(async (subscription) => {
     try {
       await webPush.sendNotification({
         endpoint: subscription.endpoint,
         keys: { p256dh: subscription.p256dh, auth: subscription.auth },
-      }, payload, { TTL: 60 * 60, timeout: 5_000 });
+      }, payload, { TTL: 60 * 60, timeout: 5_000, urgency: "high" });
+      sent += 1;
     } catch (error) {
+      failed += 1;
       const statusCode = typeof error === "object" && error && "statusCode" in error
         ? Number((error as { statusCode?: unknown }).statusCode)
         : 0;
@@ -51,6 +56,7 @@ export async function sendWebPushNotification(userId: string, notice: PushNotice
   if (expiredEndpoints.length) {
     await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expiredEndpoints } } });
   }
+  return { sent, failed };
 }
 
 function configureWebPush() {

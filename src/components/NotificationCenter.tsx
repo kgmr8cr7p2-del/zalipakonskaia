@@ -29,7 +29,10 @@ export function NotificationCenter({ fullPage = false }: { fullPage?: boolean })
   }, []);
 
   async function markRead(id: string) {
-    await fetch(`/api/notifications/${id}`, { method: "PATCH" }).catch(() => undefined);
+    const item = items.find((candidate) => candidate.id === id);
+    if (!item || item.readAt) return;
+    const response = await fetch(`/api/notifications/${id}`, { method: "PATCH", keepalive: true }).catch(() => null);
+    if (!response?.ok) return;
     setItems((current) => current.map((item) => item.id === id ? { ...item, readAt: new Date().toISOString() } : item));
     setUnread((current) => Math.max(0, current - 1));
   }
@@ -72,7 +75,7 @@ export function NotificationCenter({ fullPage = false }: { fullPage?: boolean })
     {error ? <p className="browser-push-message notification-error" role="status">{error}</p> : null}
     <div className="notification-list">
       {items.length ? items.map((item) => <article className={`notification-item ${item.readAt ? "" : "is-unread"}`} key={item.id}>
-        <span className={`notification-dot notification-dot-${item.type.toLowerCase()}`} />
+        {!item.readAt ? <span className={`notification-dot notification-dot-${item.type.toLowerCase()}`} aria-label="Непрочитанное уведомление" /> : null}
         <a className="notification-item-link" href={item.href || "#"} onClick={() => void markRead(item.id)}>
           <strong>{item.title}</strong><span>{item.body}</span><small>{new Date(item.createdAt).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" })}</small>
         </a>
