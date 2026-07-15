@@ -33,6 +33,7 @@ export function ChatThread({ user, viewerId, onClose, onBack, onMessagesRead, em
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [refreshError, setRefreshError] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedPreviewUrl, setSelectedPreviewUrl] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
@@ -51,8 +52,9 @@ export function ChatThread({ user, viewerId, onClose, onBack, onMessagesRead, em
       const response = await fetch(`/api/messages?userId=${encodeURIComponent(user.id)}`, { cache: "no-store" });
       const payload = await response.json().catch(() => ({}));
       if (!active) return;
-      if (!response.ok) setError(payload.error || "Не удалось загрузить сообщения");
+      if (!response.ok) setRefreshError(payload.error || "Не удалось загрузить сообщения");
       else {
+        setRefreshError("");
         const nextMessages: ChatMessage[] = payload.messages ?? [];
         if (messagesLoadedRef.current && nextMessages.some((message) => message.senderId === user.id && !knownMessageIdsRef.current.has(message.id))) {
           void playChatNotification();
@@ -66,6 +68,7 @@ export function ChatThread({ user, viewerId, onClose, onBack, onMessagesRead, em
     }
     setLoading(true);
     setMessages([]);
+    setRefreshError("");
     knownMessageIdsRef.current = new Set();
     messagesLoadedRef.current = false;
     void refresh();
@@ -192,7 +195,7 @@ export function ChatThread({ user, viewerId, onClose, onBack, onMessagesRead, em
         <textarea className="textarea" name="text" aria-label="Сообщение" placeholder="Напишите сообщение…" maxLength={4000} rows={1} enterKeyHint="send" onKeyDown={sendOnEnter} />
         <button className="button chat-compose-button" disabled={sending} aria-label="Отправить сообщение"><Send size={18} aria-hidden="true" /><span className="direct-chat-action-text">Отправить</span></button>
       </form>
-      {error ? <p className="direct-chat-notice is-error" role="alert">{error}</p> : null}
+      {error || refreshError ? <p className="direct-chat-notice is-error" role="alert">{error || refreshError}</p> : null}
     </section>
   );
 }

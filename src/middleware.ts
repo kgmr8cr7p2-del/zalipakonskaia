@@ -4,13 +4,20 @@ const mutatingMethods = new Set(["POST", "PATCH", "PUT", "DELETE"]);
 const csrfExemptPaths = new Set(["/api/telegram/webhook"]);
 const bearerAllowedPaths = new Set(["/api/reports/weekly", "/api/notifications/deadlines"]);
 
-const rateLimits = [
-  { pattern: /^\/api\/auth\//, windowMs: 60_000, max: 10 },
-  { pattern: /^\/api\/important-files$/, windowMs: 10 * 60_000, max: 20 },
-  { pattern: /^\/api\/tasks\/[^/]+\/files$/, windowMs: 10 * 60_000, max: 20 },
-  { pattern: /^\/api\/messages$/, windowMs: 10 * 60_000, max: 60 },
-  { pattern: /^\/api\/profile\/avatar$/, windowMs: 10 * 60_000, max: 20 },
-] as const;
+type RateLimitRule = {
+  pattern: RegExp;
+  methods: readonly string[];
+  windowMs: number;
+  max: number;
+};
+
+const rateLimits: readonly RateLimitRule[] = [
+  { pattern: /^\/api\/auth\//, methods: ["POST"], windowMs: 60_000, max: 10 },
+  { pattern: /^\/api\/important-files$/, methods: ["POST"], windowMs: 10 * 60_000, max: 20 },
+  { pattern: /^\/api\/tasks\/[^/]+\/files$/, methods: ["POST"], windowMs: 10 * 60_000, max: 20 },
+  { pattern: /^\/api\/messages$/, methods: ["POST"], windowMs: 10 * 60_000, max: 60 },
+  { pattern: /^\/api\/profile\/avatar$/, methods: ["POST"], windowMs: 10 * 60_000, max: 20 },
+];
 
 const buckets = new Map<string, { count: number; resetAt: number }>();
 
@@ -50,11 +57,11 @@ export const config = {
 };
 
 function checkRateLimit(request: NextRequest, path: string) {
-  const rule = rateLimits.find((item) => item.pattern.test(path));
+  const rule = rateLimits.find((item) => item.pattern.test(path) && item.methods.includes(request.method));
   if (!rule) return null;
 
   const now = Date.now();
-  const key = `${clientIp(request)}:${rule.pattern.source}`;
+  const key = `${clientIp(request)}:${request.method}:${rule.pattern.source}`;
   const bucket = buckets.get(key);
   if (!bucket || bucket.resetAt <= now) {
     buckets.set(key, { count: 1, resetAt: now + rule.windowMs });
