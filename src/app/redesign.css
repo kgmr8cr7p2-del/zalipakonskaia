@@ -97,7 +97,19 @@ body {
 .role-search-control .input { padding-inline-start: 2.2rem; }
 .role-directory-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-inline: .2rem; color: var(--muted); font-size: .72rem; font-weight: 800; }
 .role-directory-head strong { font-size: .72rem; color: var(--text); }
-.role-directory-list { display: grid; max-block-size: 30rem; overflow-y: auto; gap: .35rem; margin: 0; padding: 0; list-style: none; scrollbar-gutter: stable; overscroll-behavior: contain; }
+.role-directory-list {
+  display: grid;
+  max-block-size: 30rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  gap: .35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+.role-directory-list::-webkit-scrollbar { display: none; inline-size: 0; block-size: 0; }
 .role-directory-item { position: relative; display: grid; grid-template-columns: 2rem minmax(0, 1fr); align-items: center; inline-size: 100%; min-block-size: 3.35rem; gap: .65rem; padding: .55rem .65rem; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--text); text-align: start; cursor: pointer; }
 .role-directory-item:hover, .role-directory-item:focus-visible { outline: none; border-color: color-mix(in oklch, var(--brand) 25%, var(--border)); background: color-mix(in oklch, var(--brand) 6%, var(--panel)); }
 .role-directory-item.is-active { border-color: color-mix(in oklch, var(--brand) 38%, var(--border)); background: color-mix(in oklch, var(--brand) 11%, var(--panel)); box-shadow: inset 3px 0 0 var(--brand); }
