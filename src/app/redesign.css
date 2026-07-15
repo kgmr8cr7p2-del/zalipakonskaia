@@ -170,8 +170,21 @@ body {
 .board-topbar { min-inline-size: 0; }
 .board-topbar > * { min-inline-size: 0; }
 .board-topbar .filters-live { min-inline-size: 0; }
-.board-topbar .search-shell { border-radius: 10px; }
-.board-topbar .search-shell .input:focus { border-color: transparent; outline: 0; box-shadow: none; }
+.board-topbar .search-shell {
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--control);
+}
+.board-topbar .search-shell .input,
+.board-topbar .search-shell .input:hover,
+.board-topbar .search-shell .input:focus {
+  appearance: none;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+}
 .board-topbar .search-shell:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in oklch, var(--brand) 16%, transparent); }
 
 /* Keep message growth inside the chat viewport instead of scrolling the page. */
@@ -235,10 +248,10 @@ body {
 .board-content { container: board-workspace / inline-size; }
 .board-head {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: max-content minmax(0, 1fr) max-content max-content;
   grid-template-areas:
-    "identity views create"
-    "planned quick sort";
+    "identity views views create"
+    ". planned quick sort";
   align-items: center;
   justify-content: stretch;
   gap: clamp(.28rem, .45vw, .55rem);
@@ -251,7 +264,7 @@ body {
 .board-head > .spacer { display: none; }
 .board-view-tabs-inline { grid-area: views; justify-self: start; gap: .1rem; padding: .15rem; }
 .board-view-tabs-inline button { min-block-size: 2rem; padding-inline: .45rem; font-size: .76rem; }
-.board-planned-toggle { grid-area: planned; max-inline-size: none; padding-inline: .5rem; }
+.board-planned-toggle { grid-area: planned; max-inline-size: none; justify-self: end; padding-inline: .5rem; }
 .board-quick-filters {
   display: flex;
   grid-area: quick;
@@ -279,9 +292,9 @@ body {
 
 @container board-workspace (min-width: 82rem) {
   .board-head {
-    grid-template-columns: repeat(6, max-content);
-    grid-template-areas: "identity views planned quick sort create";
-    justify-content: space-between;
+    grid-template-columns: max-content max-content minmax(1rem, 1fr) repeat(4, max-content);
+    grid-template-areas: "identity views . planned quick sort create";
+    justify-content: stretch;
   }
   .board-quick-filters { display: flex; inline-size: auto; flex-wrap: nowrap; }
   .board-quick-filters .button { inline-size: auto; }
