@@ -1967,6 +1967,11 @@
     animation: drop-pulse 900ms ease-in-out infinite;
   }
 
+  .column-done {
+    border-color: color-mix(in srgb, var(--success) 28%, var(--border));
+    background: color-mix(in srgb, var(--success) 5%, var(--column-bg));
+  }
+
   .column-head {
     display: flex;
     align-items: center;
@@ -1983,6 +1988,11 @@
     padding: .05rem .45rem;
     font-size: .75rem;
     font-weight: 700;
+  }
+
+  .column-done .count {
+    background: color-mix(in srgb, var(--success) 14%, transparent);
+    color: var(--success);
   }
 
   .task-list {
@@ -2025,6 +2035,34 @@
     block-size: auto;
     border-radius: 8px 0 0 8px;
     background: var(--brand);
+  }
+
+  .task-card-done {
+    border-color: color-mix(in srgb, var(--success) 20%, var(--border));
+    background: color-mix(in srgb, var(--success) 3%, var(--panel));
+  }
+
+  .task-card-done::before {
+    background: var(--success);
+  }
+
+  .task-card-done::after {
+    content: "";
+    position: absolute;
+    inset-block-start: .72rem;
+    inset-inline-end: .72rem;
+    inline-size: .82rem;
+    block-size: .82rem;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: inset 0 0 0 2px var(--panel);
+  }
+
+  .task-card-done .task-title {
+    color: color-mix(in srgb, var(--text) 74%, var(--muted));
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--success) 48%, transparent);
+    text-decoration-thickness: 1px;
   }
 
   .priority-card-LOW {
@@ -2160,6 +2198,7 @@
   .priority-MEDIUM { color: var(--warning); background: color-mix(in oklab, var(--warning), transparent 88%); }
   .priority-HIGH { color: var(--danger); background: color-mix(in oklab, var(--danger), transparent 88%); }
   .priority-CRITICAL { color: white; background: var(--critical); }
+  .priority-DONE { color: var(--success); background: color-mix(in srgb, var(--success) 13%, transparent); }
 
   .deadline-overdue {
     color: white;
@@ -4019,6 +4058,12 @@
     border-color: color-mix(in srgb, #22c55e 24%, var(--border));
     background: color-mix(in srgb, #22c55e 9%, var(--panel));
     color: #14532d;
+  }
+
+  .badge-done {
+    border-color: color-mix(in srgb, var(--success) 34%, var(--border));
+    background: color-mix(in srgb, var(--success) 11%, var(--panel));
+    color: var(--success);
   }
 
   .status-dot {
@@ -8890,6 +8935,29 @@
   .checklist-draft-row .input {
     inline-size: 100%;
     font-size: .84rem;
+  }
+
+  .column-done .column-head {
+    color: var(--success);
+  }
+
+  .column-done .column-head strong {
+    display: inline-flex;
+    align-items: center;
+    gap: .38rem;
+  }
+
+  .column-done .column-head strong::before {
+    content: "✓";
+    display: grid;
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--success);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 900;
   }
 
   .modal-create-work-grid .checklist-draft-row .input {

@@ -525,7 +525,7 @@ export function BoardClient({ initialView }: { initialView: View }) {
         <section className={`board ${viewMode === "list" || viewMode === "timeline" ? "is-hidden" : ""}`} aria-label="Канбан-доска">
           {visibleColumns.map((column: any) => (
             <article
-              className={`column ${dropColumn === column.id ? "drop-target" : ""}`}
+              className={`column ${dropColumn === column.id ? "drop-target" : ""} ${isCompletedColumn(column.name) ? "column-done" : ""}`}
               key={column.id}
               onDragOver={(event) => {
                 event.preventDefault();
@@ -675,9 +675,10 @@ function TaskCard({
 }) {
   const checklist = checklistProgress(task);
   const deadlineState = task.deadline ? deadlineText(task) : "";
+  const done = isCompletedColumn(task.column?.name ?? "");
   return (
     <div
-      className={`task-card priority-card-${task.priority} ${dragging ? "dragging" : ""}`}
+      className={`task-card priority-card-${task.priority} ${done ? "task-card-done" : ""} ${dragging ? "dragging" : ""}`}
       role="button"
       tabIndex={0}
       draggable
@@ -710,7 +711,7 @@ function TaskCard({
       ) : null}
       {task.description ? <p className="task-description">{task.description}</p> : null}
       <div className="meta-row">
-        <span className={`chip priority-${task.priority}`}>{priorityLabels[task.priority as keyof typeof priorityLabels]}</span>
+        <span className={`chip ${done ? "priority-DONE" : `priority-${task.priority}`}`}>{done ? "Закрыто" : priorityLabels[task.priority as keyof typeof priorityLabels]}</span>
         {taskAssigneeUsers(task).map((user: any) => <span className="chip" key={user.id}>{user.name}</span>)}
       </div>
       <div className="meta-row">
@@ -1280,6 +1281,7 @@ function TaskDialogV2(props: {
   const checklistStats = checklistProgress(props.task);
   const editFormId = `task-edit-${props.task.id}`;
   const isPersonalBoard = Boolean(props.view.board.ownerId);
+  const taskDone = isCompletedColumn(props.task.column?.name ?? "");
 
   return (
     <section className="task-modal-v2">
@@ -1289,7 +1291,7 @@ function TaskDialogV2(props: {
             #{props.task.taskNumber} {props.task.title}
           </h2>
           <div className="modal-badges">
-            <span className="modal-badge badge-purple"><span className="status-dot" />{props.task.column.name}</span>
+            <span className={`modal-badge ${taskDone ? "badge-done" : "badge-purple"}`}><span className="status-dot" />{taskDone ? "Закрыто" : props.task.column.name}</span>
             {!isPersonalBoard ? <span className="modal-badge badge-blue"><span className="status-dot" />{props.task.oilDepot?.name ?? "Без нефтебазы"}</span> : null}
             <span className="modal-badge badge-green"><span className="status-dot" />{priorityLabels[props.task.priority as keyof typeof priorityLabels]} приоритет</span>
           </div>
