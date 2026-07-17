@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { CalendarClock, CloudSun, Minimize2, Newspaper, Radio, Smile, Target, Wind } from "lucide-react";
+import { CalendarClock, Clock3, CloudSun, ListChecks, Minimize2, Newspaper, Radio, Smile, Target, Wind } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { TaskSoundNotifier } from "@/components/TaskSoundNotifier";
 import { GoidaReminder } from "@/components/GoidaReminder";
@@ -97,6 +97,7 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
   const tasks = useMemo(() => view?.board?.columns?.flatMap((column: any) => column.tasks) ?? [], [view]);
   const summary = useMemo(() => buildSummary(tasks, view), [tasks, view]);
   const cleanNews = useMemo(() => news ? { ...news, summary: cleanNewsText(news.summary) } : null, [news]);
+  const activeModeIndex = tvModes.findIndex((mode) => mode.id === tvMode);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -228,7 +229,7 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
         <Minimize2 size={17} />
         Выйти из просмотра
       </button>
-      <header className="tv-hero">
+      {tvMode === "standby" || tvMode === "jokes" ? null : <header className="tv-hero">
         <section className="tv-title-block">
           <span className={connectionState === "live" ? "tv-live-pill" : "tv-live-pill tv-live-stale"}>
             <Radio size={16} />
@@ -253,14 +254,28 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
         <section className="tv-joke-card" aria-label="Случайный анекдот" aria-live="polite">
           <strong key={joke.updatedAt}>{joke.text}</strong>
         </section>
-      </header>
+      </header>}
 
       <nav className="tv-mode-bar" aria-label="Режим TV-дашборда">
-        {tvModes.map((mode) => (
-          <button className={tvMode === mode.id ? "is-active" : ""} type="button" key={mode.id} onClick={() => { setTvMode(mode.id); setManualModeUntil(Date.now() + 90_000); }}>
-            {mode.label}
-          </button>
-        ))}
+        <div className="tv-mode-current">
+          <span>Taskora TV</span>
+          <strong>{String(activeModeIndex + 1).padStart(2, "0")} · {tvModes[activeModeIndex]?.label}</strong>
+        </div>
+        <div className="tv-mode-switcher">
+          {tvModes.map((mode, index) => {
+            const Icon = tvModeIcon(mode.id);
+            return (
+              <button className={tvMode === mode.id ? "is-active" : ""} type="button" key={mode.id} onClick={() => { setTvMode(mode.id); setManualModeUntil(Date.now() + 90_000); }}>
+                <small>{String(index + 1).padStart(2, "0")}</small>
+                <Icon size={16} />
+                <span>{mode.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="tv-mode-meter" aria-hidden="true">
+          {tvModes.map((mode) => <span className={tvMode === mode.id ? "is-active" : ""} key={mode.id} />)}
+        </div>
       </nav>
 
       <section className="tv-layout">
@@ -268,7 +283,7 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
         {tvMode === "news" ? <TvNewsReader news={cleanNews} unavailable={newsUnavailable} expanded={newsExpanded} now={now} /> : null}
         {tvMode === "tasks" ? <section className="tv-board" aria-label="Канбан-доска для телевизора">
           {view?.board?.columns?.map((column: any) => (
-            <article className="tv-column" key={column.id}>
+            <article className={`tv-column${isCompletedColumn(column.name) ? " tv-column-done" : ""}`} key={column.id}>
               <header>
                 <span>{column.name}</span>
                 <b>{column.tasks.length}</b>
@@ -434,11 +449,12 @@ function TvFocusDashboard({ tasks, summary }: { tasks: Task[]; summary: ReturnTy
 }
 
 function TvTaskCard({ task }: { task: Task }) {
+  const done = isCompletedColumn(task.column?.name ?? "");
   return (
-    <article className={`tv-task tv-task-${String(task.priority).toLowerCase()}`}>
+    <article className={`tv-task tv-task-${String(task.priority).toLowerCase()}${done ? " tv-task-done" : ""}`}>
       <div className="tv-task-top">
         <span>#{task.taskNumber}</span>
-        <b>{priorityLabels[task.priority as keyof typeof priorityLabels]}</b>
+        <b>{done ? "Закрыто" : priorityLabels[task.priority as keyof typeof priorityLabels]}</b>
       </div>
       <h2>{task.title}</h2>
       <div className="tv-task-meta">
@@ -464,6 +480,14 @@ function nextTvMode(current: TvMode, direction: 1 | -1) {
   return tvModes[nextIndex].id;
 }
 
+function tvModeIcon(mode: TvMode) {
+  if (mode === "standby") return Clock3;
+  if (mode === "news") return Newspaper;
+  if (mode === "tasks") return ListChecks;
+  if (mode === "jokes") return Smile;
+  return Target;
+}
+
 function priorityRank(priority: string) {
   if (priority === "CRITICAL") return 5;
   if (priority === "HIGH") return 4;
@@ -477,13 +501,33 @@ function deadlineTime(task: Task) {
 }
 
 function cleanNewsText(value: string) {
-  return value
+  const withoutBlocks = value
+    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ");
+
+  return decodeHtmlEntities(withoutBlocks)
     .replace(/https?:\/\/\S+/gi, "")
     .replace(/\b(?:www\.)?dzen\.ru\/\S+/gi, "")
+    .replace(/\b(?:class|style|data-[\w-]+|aria-[\w-]+|href|src|target|rel)\s*=\s*["'][^"']*["']/gi, " ")
+    .replace(/\b(?:div|span|script|style|class|href|src)\b/gi, " ")
+    .replace(/[<>]+/g, " ")
     .replace(/\b(?:читать далее|подробнее|источник)\b[:\s]*/gi, "")
     .replace(/\s+([,.!?;:])/g, "$1")
     .replace(/\s{2,}/g, " ")
     .trim();
+}
+
+function decodeHtmlEntities(value: string) {
+  return value
+    .replace(/&nbsp;|&#160;|&#xA0;/gi, " ")
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;|&#39;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&amp;/gi, "&")
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([\da-f]+);/gi, (_, code: string) => String.fromCodePoint(Number.parseInt(code, 16)));
 }
 
 function buildSummary(tasks: Task[], view: View) {
