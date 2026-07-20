@@ -1,7 +1,7 @@
 ﻿"use client";
 
-import { CheckCircle2, Clock3, CloudSun, Flame, ListChecks, Minimize2, Newspaper, Radio, Smile, Target, TimerReset, Wind } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { BarChart3, CheckCircle2, Clock3, CloudSun, Flame, ListChecks, Minimize2, Newspaper, PieChart, Radio, Smile, Target, TimerReset, TrendingUp, Wind } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { TaskSoundNotifier } from "@/components/TaskSoundNotifier";
 import { GoidaReminder } from "@/components/GoidaReminder";
 import { WeeklyReportReminder } from "@/components/WeeklyReportReminder";
@@ -408,7 +408,7 @@ export function BoardTvClient({ initialView, initialNews = null, initialNow }: {
       </nav>
 
       <section className="tv-layout">
-        {tvMode === "standby" ? <TvStandby now={now} weather={weather} news={cleanNews} newsUnavailable={newsUnavailable} joke={joke} summary={summary} tasks={tasks} /> : null}
+        {tvMode === "standby" ? <TvStandby now={now} weather={weather} news={cleanNews} newsUnavailable={newsUnavailable} summary={summary} tasks={tasks} activityLogs={view?.activityLogs ?? []} /> : null}
         {tvMode === "news" ? <TvNewsReader news={cleanNews} unavailable={newsUnavailable} now={now} /> : null}
         {tvMode === "tasks" ? (
           <TvOperationsBoard columns={view?.board?.columns ?? []} summary={summary} tasks={tasks} now={now} visibleTaskLimit={visibleTaskLimit} />
@@ -538,120 +538,79 @@ function WeatherPanel({ weather }: { weather: Weather | null }) {
   );
 }
 
-function TvStandby({ now, weather, news, newsUnavailable, joke, summary, tasks }: { now: Date; weather: Weather | null; news: TvNews | null; newsUnavailable: boolean; joke: TvJoke; summary: ReturnType<typeof buildSummary>; tasks: Task[] }) {
-  const focusQueue = buildFocusQueue(tasks).slice(0, 10);
+function TvStandby({ now, weather, news, newsUnavailable, summary, tasks, activityLogs }: { now: Date; weather: Weather | null; news: TvNews | null; newsUnavailable: boolean; summary: ReturnType<typeof buildSummary>; tasks: Task[]; activityLogs: any[] }) {
   const activeTasks = tasks.filter((task) => !isCompletedColumn(task.column?.name ?? ""));
-  const checklistTasks = activeTasks.filter((task) => task.checklists?.length);
-  const checklistAverage = checklistTasks.length ? Math.round(checklistTasks.reduce((sum, task) => sum + checklistProgress(task), 0) / checklistTasks.length) : 0;
-  const dueToday = activeTasks.filter((task) => daysUntilDeadline(task) === 0).length;
-  const dueSoon = activeTasks.filter((task) => {
-    const dueIn = daysUntilDeadline(task);
-    return dueIn > 0 && dueIn <= 3;
-  }).length;
-  const byColumn = [...activeTasks.reduce((map, task) => {
-    const name = task.column?.name ?? "Без статуса";
-    map.set(name, (map.get(name) ?? 0) + 1);
-    return map;
-  }, new Map<string, number>())].slice(0, 5);
-  const priorityMix = [
-    { label: "Критич.", value: activeTasks.filter((task) => task.priority === "CRITICAL").length },
-    { label: "Высок.", value: activeTasks.filter((task) => task.priority === "HIGH").length },
-    { label: "Средн.", value: activeTasks.filter((task) => task.priority === "MEDIUM").length },
-    { label: "План.", value: activeTasks.filter((task) => task.priority === "PLANNED" || task.priority === "LOW").length },
-  ];
-  const unassignedCount = activeTasks.filter((task) => !taskAssignees(task).length).length;
-  const withoutDeadlineCount = activeTasks.filter((task) => !task.deadline).length;
-  const reviewCount = activeTasks.filter((task) => isReviewColumn(task.column?.name ?? "")).length;
-  const withChecklistCount = activeTasks.filter((task) => task.checklists?.length).length;
-  const deadlineMix = [
-    { label: "просрочено", value: summary.overdue },
-    { label: "сегодня", value: dueToday },
-    { label: "до 3 дней", value: dueSoon },
-  ];
-  const signals = [
-    { label: "Без исполнителя", value: unassignedCount },
-    { label: "Без срока", value: withoutDeadlineCount },
-    { label: "На проверке", value: reviewCount },
-    { label: "С чек-листом", value: withChecklistCount },
-  ];
-  const shiftChecks = [
-    { label: "Сегодня к сроку", value: dueToday },
-    { label: "Следующие 3 дня", value: dueSoon },
-    { label: "Назначено", value: activeTasks.filter((task) => taskAssignees(task).length).length },
-    { label: "Средний чек-лист", value: `${checklistAverage}%` },
-    { label: "Без исполнителя", value: unassignedCount },
-    { label: "Без срока", value: withoutDeadlineCount },
-    { label: "На проверке", value: reviewCount },
-    { label: "С чек-листом", value: withChecklistCount },
-  ];
+  const recentFocus = buildRecentActionFocus(tasks, activityLogs).slice(0, 6);
+  const chartData = buildTvActivityChart(tasks, activityLogs);
+  const statusRows = buildStatusRows(tasks);
+  const depotRows = buildDepotRows(activeTasks).slice(0, 5);
+  const completion = tasks.length ? Math.round((summary.completed / tasks.length) * 100) : 0;
+  const updatedToday = activityLogs.filter((log) => isSameCalendarDay(log.createdAt, now)).length || tasks.filter((task) => isSameCalendarDay(task.updatedAt, now)).length;
 
   return (
-    <section className="tv-standby tv-standby-briefing" aria-label="Оперативная сводка">
-      <article className="tv-standby-briefing-main">
-        <header>
-          <span>Оперативная сводка</span>
-          <strong>{timeOnly(now)}</strong>
-          <small>{dateLong(now)}</small>
-        </header>
-        <div className="tv-standby-scoreboard">
-          <span><b>{summary.active}</b> активно</span>
-          <span><b>{summary.inProgress}</b> в работе</span>
-          <span><b>{summary.overdue}</b> просрочено</span>
-          <span><b>{summary.critical}</b> критично</span>
-          <span><b>{summary.completed}</b> готово</span>
-        </div>
-        <div className="tv-standby-column-load">
-          {byColumn.map(([name, count]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{count}</strong>
-            </div>
-          ))}
-        </div>
-        <div className="tv-standby-deadlines">
-          <span><Clock3 size={16} /> Сроки</span>
-          {deadlineMix.map((item) => (
-            <small key={item.label}><b>{item.value}</b>{item.label}</small>
-          ))}
-        </div>
-        <div className="tv-standby-priority-mix">
-          <span><Flame size={16} /> Приоритеты</span>
-          {priorityMix.map((item) => (
-            <small key={item.label}><b>{item.value}</b>{item.label}</small>
-          ))}
-        </div>
-      </article>
-
-      <article className="tv-standby-priority">
-        <span><Target size={17} /> Очередь внимания</span>
-        {focusQueue.length ? focusQueue.map((item, index) => <TvFocusRow item={item} index={index} key={item.task.id} compact />) : <strong>Срочных задач нет</strong>}
-      </article>
-
-      <article className="tv-standby-news">
-        <span><Newspaper size={17} /> Новости</span>
-        <strong>{news?.title ?? (newsUnavailable ? "Новости временно недоступны" : "Загружаем главную новость")}</strong>
-        {news?.summary ? <p>{news.summary}</p> : null}
-      </article>
-
-      <article className="tv-standby-signals">
-        <span><ListChecks size={17} /> Сигналы доски</span>
+    <section className="tv-standby tv-standby-wall" aria-label="Стендбай">
+      <article className="tv-wall-clock">
+        <span>Taskora TV</span>
+        <strong>{timeOnly(now)}</strong>
+        <small>{dateLong(now)}</small>
         <div>
-          {signals.map((signal) => (
-            <small key={signal.label}><b>{signal.value}</b>{signal.label}</small>
-          ))}
+          <span><b>{summary.active}</b>активно</span>
+          <span><b>{summary.overdue}</b>просрочено</span>
+          <span><b>{updatedToday}</b>действий сегодня</span>
         </div>
       </article>
 
-      <article className="tv-standby-info">
+      <article className="tv-wall-news">
+        <span><Newspaper size={18} /> Главная новость</span>
+        <strong>{news?.title ?? (newsUnavailable ? "Новости временно недоступны" : "Загружаем главную новость")}</strong>
+        {news?.summary ? <p>{news.summary}</p> : <p>Экран обновится автоматически, когда источник ответит.</p>}
+      </article>
+
+      <article className="tv-wall-weather">
         <WeatherPanel weather={weather} />
-        <div className="tv-standby-shift-checks">
-          <span><TimerReset size={17} /> Контроль смены</span>
-          {shiftChecks.map((item) => (
-            <small key={item.label}><b>{item.value}</b>{item.label}</small>
-          ))}
+      </article>
+
+      <article className="tv-wall-report tv-wall-panel">
+        <header>
+          <span><TrendingUp size={17} /> Отчётный пояс</span>
+          <small>динамика · статусы · прогресс · нефтебазы</small>
+        </header>
+        <div className="tv-wall-report-grid">
+          <section className="tv-report-chart" aria-label="Динамика недели">
+            <span><BarChart3 size={15} /> Неделя</span>
+            <TvMiniLineChart data={chartData} />
+          </section>
+          <section className="tv-report-status" aria-label="Статусы задач">
+            <span><PieChart size={15} /> Статусы</span>
+            <TvStatusDonut rows={statusRows} total={Math.max(1, tasks.length)} />
+          </section>
+          <section className="tv-report-progress" aria-label="Прогресс и нефтебазы">
+            <span><CheckCircle2 size={15} /> Прогресс</span>
+            <div className="tv-wall-gauge" style={{ "--tv-gauge": `${completion}%` } as CSSProperties}>
+              <strong>{completion}%</strong>
+              <small>готово</small>
+            </div>
+            <div className="tv-wall-depots">
+              {depotRows.map((row) => (
+                <span key={row.name}>
+                  <small>{row.name}</small>
+                  <i style={{ inlineSize: `${row.percent}%` }} />
+                  <b>{row.count}</b>
+                </span>
+              ))}
+            </div>
+          </section>
         </div>
-        <span><Smile size={17} /> Пауза</span>
-        <strong>{joke.text}</strong>
+      </article>
+
+      <article className="tv-wall-focus tv-wall-panel">
+        <header>
+          <span><Target size={17} /> Последние действия в фокусе</span>
+          <small>задачи, которые недавно менялись</small>
+        </header>
+        <div>
+          {recentFocus.length ? recentFocus.map((item) => <TvRecentFocusRow item={item} key={`${item.task.id}-${item.updatedAt}`} />) : <strong>За последнее время изменений нет</strong>}
+        </div>
       </article>
     </section>
   );
@@ -679,6 +638,102 @@ function TvNewsReader({ news, unavailable, now }: { news: TvNews | null; unavail
         )}
       </article>
     </section>
+  );
+}
+
+type TvChartPoint = {
+  label: string;
+  created: number;
+  updated: number;
+  completed: number;
+};
+
+type TvStatusRow = {
+  name: string;
+  count: number;
+  color: string;
+  percent: number;
+};
+
+type TvRecentFocus = {
+  task: Task;
+  action: string;
+  actor: string;
+  updatedAt: string;
+  tone: "red" | "amber" | "blue" | "green";
+};
+
+const tvChartColors = ["#60a5fa", "#34d399", "#f59e0b", "#f87171", "#a78bfa", "#22d3ee"];
+
+function TvMiniLineChart({ data }: { data: TvChartPoint[] }) {
+  const max = Math.max(1, ...data.flatMap((item) => [item.created, item.updated, item.completed]));
+  const totals = data.reduce((sum, item) => ({
+    created: sum.created + item.created,
+    updated: sum.updated + item.updated,
+    completed: sum.completed + item.completed,
+  }), { created: 0, updated: 0, completed: 0 });
+  const created = chartPolyline(data.map((item) => item.created), max);
+  const updated = chartPolyline(data.map((item) => item.updated), max);
+  const completed = chartPolyline(data.map((item) => item.completed), max);
+
+  return (
+    <figure className="tv-mini-chart">
+      <div className="tv-mini-chart-summary">
+        <span><b>{totals.created}</b>создано</span>
+        <span><b>{totals.updated}</b>обновлено</span>
+        <span><b>{totals.completed}</b>закрыто</span>
+      </div>
+      <svg viewBox="0 0 100 54" preserveAspectRatio="none" aria-hidden="true">
+        {[12, 26, 40].map((y) => <line className="tv-mini-chart-grid" key={y} x1="0" x2="100" y1={y} y2={y} />)}
+        <polyline className="tv-mini-chart-created" points={created} />
+        <polyline className="tv-mini-chart-updated" points={updated} />
+        <polyline className="tv-mini-chart-completed" points={completed} />
+      </svg>
+      <div className="tv-mini-chart-days">
+        {data.map((item) => <span key={item.label}>{item.label}</span>)}
+      </div>
+    </figure>
+  );
+}
+
+function TvStatusDonut({ rows, total }: { rows: TvStatusRow[]; total: number }) {
+  let cursor = 0;
+  const gradient = rows.length
+    ? `conic-gradient(${rows.map((row) => {
+        const start = cursor;
+        cursor += row.percent;
+        return `${row.color} ${start}% ${cursor}%`;
+      }).join(", ")})`
+    : "conic-gradient(#334155 0 100%)";
+
+  return (
+    <div className="tv-status-donut-wrap">
+      <div className="tv-status-donut" style={{ "--tv-donut": gradient } as CSSProperties}>
+        <span>{total}</span>
+      </div>
+      <div className="tv-status-list">
+        {rows.map((row) => (
+          <span key={row.name}>
+            <i style={{ background: row.color }} />
+            <small>{row.name}</small>
+            <b>{row.count}</b>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TvRecentFocusRow({ item }: { item: TvRecentFocus }) {
+  return (
+    <article className={`tv-recent-focus-row tv-recent-focus-${item.tone}`}>
+      <time>{relativeTimeLabel(item.updatedAt)}</time>
+      <div>
+        <strong>#{item.task.taskNumber} {item.task.title}</strong>
+        <span>{item.action} · {item.actor} · {item.task.column?.name ?? "Без статуса"}</span>
+      </div>
+      <small>{taskRiskLabel(item.task)}</small>
+    </article>
   );
 }
 
@@ -824,6 +879,130 @@ function buildFocusQueue(tasks: Task[]): TvFocusItem[] {
     })
     .filter((item) => item.score >= 40)
     .sort((a, b) => b.score - a.score || deadlineTime(a.task) - deadlineTime(b.task) || a.task.taskNumber - b.task.taskNumber);
+}
+
+function buildRecentActionFocus(tasks: Task[], activityLogs: any[]): TvRecentFocus[] {
+  const tasksById = new Map(tasks.map((task) => [task.id, task]));
+  const seen = new Set<string>();
+  const fromLogs = activityLogs
+    .filter((log) => log.taskId && tasksById.has(log.taskId))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .flatMap((log) => {
+      const task = tasksById.get(log.taskId);
+      if (!task || seen.has(task.id)) return [];
+      seen.add(task.id);
+      return [{
+        task,
+        action: tvActivityLabel(log.action),
+        actor: log.user?.name ?? "Система",
+        updatedAt: log.createdAt,
+        tone: recentFocusTone(task),
+      }];
+    });
+
+  if (fromLogs.length) return fromLogs;
+
+  return [...tasks]
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .map((task) => ({
+      task,
+      action: "Обновлена",
+      actor: task.author?.name ?? "Система",
+      updatedAt: task.updatedAt,
+      tone: recentFocusTone(task),
+    }));
+}
+
+function buildTvActivityChart(tasks: Task[], activityLogs: any[]): TvChartPoint[] {
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const day = startOfToday();
+    day.setDate(day.getDate() - (6 - index));
+    return day;
+  });
+
+  return days.map((day) => ({
+    label: new Intl.DateTimeFormat("ru-RU", { weekday: "short" }).format(day).replace(".", ""),
+    created: tasks.filter((task) => isSameCalendarDay(task.createdAt, day)).length,
+    updated: activityLogs.length
+      ? activityLogs.filter((log) => isSameCalendarDay(log.createdAt, day)).length
+      : tasks.filter((task) => isSameCalendarDay(task.updatedAt, day)).length,
+    completed: tasks.filter((task) => isCompletedColumn(task.column?.name ?? "") && isSameCalendarDay(task.updatedAt, day)).length,
+  }));
+}
+
+function buildStatusRows(tasks: Task[]): TvStatusRow[] {
+  const total = Math.max(1, tasks.length);
+  const rows = [...tasks.reduce((map, task) => {
+    const name = task.column?.name ?? "Без статуса";
+    map.set(name, (map.get(name) ?? 0) + 1);
+    return map;
+  }, new Map<string, number>())];
+
+  return rows.map(([name, count], index) => ({
+    name,
+    count,
+    color: tvChartColors[index % tvChartColors.length],
+    percent: Math.max(0, (count / total) * 100),
+  }));
+}
+
+function buildDepotRows(tasks: Task[]) {
+  const rows = [...tasks.reduce((map, task) => {
+    const name = task.oilDepot?.name ?? "Без нефтебазы";
+    map.set(name, (map.get(name) ?? 0) + 1);
+    return map;
+  }, new Map<string, number>())].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ru"));
+  const max = Math.max(1, ...rows.map(([, count]) => count));
+  return rows.map(([name, count]) => ({ name, count, percent: Math.round((count / max) * 100) }));
+}
+
+function chartPolyline(values: number[], max: number) {
+  if (!values.length) return "";
+  return values.map((value, index) => {
+    const x = values.length === 1 ? 50 : (index / (values.length - 1)) * 100;
+    const y = 50 - (Math.max(0, value) / max) * 42;
+    return `${Math.round(x * 100) / 100},${Math.round(y * 100) / 100}`;
+  }).join(" ");
+}
+
+function recentFocusTone(task: Task): TvRecentFocus["tone"] {
+  if (isCompletedColumn(task.column?.name ?? "")) return "green";
+  if (isOverdue(task) || task.priority === "CRITICAL") return "red";
+  if (task.priority === "HIGH" || isDueSoon(task)) return "amber";
+  return "blue";
+}
+
+function tvActivityLabel(action: string) {
+  const labels: Record<string, string> = {
+    TASK_CREATED: "Создана",
+    TASK_UPDATED: "Обновлена",
+    TASK_DELETED: "Удалена",
+    STATUS_CHANGED: "Статус изменён",
+    COMMENT_ADDED: "Комментарий",
+    FILE_UPLOADED: "Файл добавлен",
+    CHECKLIST_CHANGED: "Чек-лист",
+    COLUMN_CHANGED: "Колонка",
+  };
+  return labels[action] ?? "Действие";
+}
+
+function isSameCalendarDay(value: string | Date | null | undefined, day: string | Date) {
+  if (!value) return false;
+  const left = new Date(value);
+  const right = new Date(day);
+  return left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate();
+}
+
+function relativeTimeLabel(value: string | Date) {
+  const diffMs = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(0, Math.floor(diffMs / 60_000));
+  if (minutes < 1) return "сейчас";
+  if (minutes < 60) return `${minutes} мин`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} ч`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} дн`;
+  return dateShort(new Date(value).toISOString());
 }
 
 function taskRiskLabel(task: Task) {

@@ -11677,3 +11677,629 @@
     grid-row: auto;
   }
 }
+
+/* Cohesive standby wall: time, news, weather, report charts, recent actions. */
+.tv-standby-wall {
+  display: grid;
+  grid-template-columns: minmax(20rem, .78fr) minmax(0, 1.22fr) minmax(23rem, .9fr);
+  grid-template-rows: minmax(17.5rem, .88fr) minmax(0, 1fr);
+  gap: .7rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tv-wall-clock,
+.tv-wall-news,
+.tv-wall-weather,
+.tv-wall-panel {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--tv-line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgb(31 40 47 / 96%), rgb(17 23 28 / 96%));
+  box-shadow: 0 16px 38px rgb(0 0 0 / 30%), inset 0 1px 0 rgb(255 255 255 / 7%);
+}
+
+.tv-wall-clock {
+  display: grid;
+  align-content: center;
+  gap: .55rem;
+  padding: 1.2rem;
+}
+
+.tv-wall-clock > span,
+.tv-wall-news > span,
+.tv-wall-panel header span {
+  display: flex;
+  align-items: center;
+  gap: .42rem;
+  color: #79b3ff;
+  font-size: .78rem;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.tv-wall-clock strong {
+  color: #fff;
+  font-size: clamp(3.6rem, 4.8vw, 5.8rem);
+  font-weight: 820;
+  line-height: .9;
+  font-variant-numeric: tabular-nums;
+}
+
+.tv-wall-clock small {
+  color: var(--tv-muted);
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.tv-wall-clock > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .45rem;
+  margin-top: .6rem;
+}
+
+.tv-wall-clock > div b {
+  display: block;
+  color: #fff;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tv-wall-clock > div span {
+  display: grid;
+  gap: .12rem;
+  min-width: 0;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 7px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--tv-muted);
+  padding: .62rem;
+  font-size: .68rem;
+  font-weight: 900;
+}
+
+.tv-wall-news {
+  display: grid;
+  align-content: center;
+  gap: .9rem;
+  padding: clamp(1.1rem, 2vw, 1.8rem);
+}
+
+.tv-wall-news strong {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(1.55rem, 2.25vw, 2.65rem);
+  line-height: 1.08;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+.tv-wall-news p {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--tv-muted);
+  font-size: clamp(.95rem, 1.08vw, 1.22rem);
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+.tv-wall-weather {
+  display: grid;
+  align-content: center;
+  padding: 1rem;
+}
+
+.tv-wall-weather .tv-weather-card {
+  min-block-size: auto;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.tv-wall-weather .tv-weather-card svg {
+  color: #22d3ee;
+}
+
+.tv-wall-weather .tv-weather-card strong {
+  color: #fff;
+  font-size: clamp(1.25rem, 1.55vw, 1.8rem);
+}
+
+.tv-wall-weather .tv-weather-card span,
+.tv-wall-weather .tv-weather-card small {
+  color: var(--tv-muted);
+  font-size: .95rem;
+}
+
+.tv-wall-panel {
+  display: grid;
+  gap: .7rem;
+  padding: .85rem;
+}
+
+.tv-wall-panel header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .75rem;
+  min-width: 0;
+}
+
+.tv-wall-panel header small {
+  overflow: hidden;
+  color: var(--tv-muted);
+  font-size: .72rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tv-wall-chart {
+  grid-column: 1 / 2;
+}
+
+.tv-wall-donut {
+  grid-column: 2 / 3;
+}
+
+.tv-wall-progress {
+  grid-column: 2 / 3;
+  grid-row: 2;
+  align-self: end;
+  max-height: 45%;
+}
+
+.tv-wall-focus {
+  grid-column: 3;
+  grid-row: 2;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.tv-mini-chart {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: .45rem;
+  min-height: 0;
+  margin: 0;
+}
+
+.tv-mini-chart-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .42rem;
+}
+
+.tv-mini-chart-summary span {
+  display: grid;
+  gap: .1rem;
+  min-width: 0;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--tv-muted);
+  padding: .45rem .5rem;
+  font-size: .66rem;
+  font-weight: 900;
+}
+
+.tv-mini-chart-summary b {
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.tv-mini-chart svg {
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 11rem;
+}
+
+.tv-mini-chart-grid {
+  stroke: rgb(255 255 255 / 9%);
+  stroke-width: .5;
+  vector-effect: non-scaling-stroke;
+}
+
+.tv-mini-chart-created,
+.tv-mini-chart-updated,
+.tv-mini-chart-completed {
+  fill: none;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.tv-mini-chart-created { stroke: #60a5fa; }
+.tv-mini-chart-updated { stroke: #f59e0b; }
+.tv-mini-chart-completed { stroke: #34d399; }
+
+.tv-mini-chart-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  color: var(--tv-muted);
+  font-size: .68rem;
+  font-weight: 850;
+  text-align: center;
+}
+
+.tv-status-donut-wrap {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, .52fr) minmax(0, 1fr);
+  align-items: center;
+  gap: .8rem;
+  min-height: 0;
+}
+
+.tv-status-donut {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--tv-donut);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+
+.tv-status-donut::before {
+  content: "";
+  grid-area: 1 / 1;
+  inline-size: 63%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #12181d;
+}
+
+.tv-status-donut span {
+  z-index: 1;
+  grid-area: 1 / 1;
+  color: #fff;
+  font-size: 2.1rem;
+  font-weight: 950;
+}
+
+.tv-status-list,
+.tv-wall-depots,
+.tv-wall-focus > div {
+  display: grid;
+  gap: .42rem;
+  min-height: 0;
+}
+
+.tv-status-list span,
+.tv-wall-depots span {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .42rem;
+  color: var(--tv-muted);
+  font-size: .74rem;
+  font-weight: 850;
+}
+
+.tv-status-list i {
+  inline-size: .55rem;
+  block-size: .55rem;
+  border-radius: 50%;
+}
+
+.tv-status-list small,
+.tv-wall-depots small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tv-status-list b,
+.tv-wall-depots b {
+  color: #fff;
+}
+
+.tv-wall-gauge {
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  inline-size: min(12rem, 72%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(#34d399 0 var(--tv-gauge), rgb(255 255 255 / 9%) var(--tv-gauge) 100%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+
+.tv-wall-gauge::before {
+  content: "";
+  grid-area: 1 / 1;
+  inline-size: 67%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #12181d;
+}
+
+.tv-wall-gauge strong,
+.tv-wall-gauge span {
+  z-index: 1;
+  grid-area: 1 / 1;
+}
+
+.tv-wall-gauge strong {
+  color: #fff;
+  font-size: 2.15rem;
+  line-height: .9;
+}
+
+.tv-wall-gauge span {
+  align-self: end;
+  margin-bottom: 26%;
+  color: var(--tv-muted);
+  font-size: .7rem;
+  font-weight: 900;
+}
+
+.tv-wall-depots span {
+  grid-template-columns: minmax(0, 1fr) minmax(3.5rem, .8fr) auto;
+}
+
+.tv-wall-depots i {
+  display: block;
+  block-size: .42rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #60a5fa, #34d399);
+}
+
+.tv-recent-focus-row {
+  display: grid;
+  grid-template-columns: 3.8rem minmax(0, 1fr) 4.6rem;
+  align-items: center;
+  gap: .62rem;
+  min-height: 3.75rem;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-left: .22rem solid #60a5fa;
+  border-radius: 7px;
+  background: rgb(255 255 255 / 5%);
+  padding: .52rem .58rem;
+}
+
+.tv-recent-focus-green { border-left-color: #34d399; }
+.tv-recent-focus-amber { border-left-color: #f59e0b; }
+.tv-recent-focus-red { border-left-color: #f87171; }
+
+.tv-recent-focus-row time,
+.tv-recent-focus-row small {
+  justify-self: start;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 8%);
+  color: #e9f2ed;
+  padding: .22rem .42rem;
+  font-size: .7rem;
+  font-weight: 950;
+}
+
+.tv-recent-focus-row strong {
+  display: block;
+  overflow: hidden;
+  color: #fff;
+  font-size: .86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tv-recent-focus-row span {
+  display: block;
+  overflow: hidden;
+  color: var(--tv-muted);
+  font-size: .7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tv-recent-focus-row small {
+  justify-self: end;
+}
+
+@media (height <= 820px) {
+  .tv-standby-wall {
+    grid-template-columns: minmax(17rem, .7fr) minmax(0, 1.28fr) minmax(21rem, .9fr);
+    grid-template-rows: minmax(13.5rem, .82fr) minmax(0, 1fr);
+    gap: .55rem;
+  }
+
+  .tv-wall-clock,
+  .tv-wall-news,
+  .tv-wall-weather,
+  .tv-wall-panel {
+    padding: .65rem;
+  }
+
+  .tv-wall-clock strong {
+    font-size: clamp(2.9rem, 4.2vw, 3.65rem);
+  }
+
+  .tv-wall-clock > div {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .3rem;
+  }
+
+  .tv-wall-clock > div b {
+    font-size: 1.25rem;
+  }
+
+  .tv-wall-news strong {
+    font-size: clamp(1.2rem, 2.1vw, 1.72rem);
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  .tv-wall-news p {
+    font-size: .86rem;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  .tv-wall-weather .tv-weather-card small {
+    display: none;
+  }
+
+  .tv-mini-chart svg {
+    min-block-size: 5.9rem;
+  }
+
+  .tv-mini-chart-summary span {
+    padding: .34rem .4rem;
+  }
+
+  .tv-mini-chart-summary b {
+    font-size: 1rem;
+  }
+
+  .tv-status-donut-wrap {
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+  }
+
+  .tv-wall-progress {
+    display: none;
+  }
+
+  .tv-recent-focus-row {
+    grid-template-columns: 3.1rem minmax(0, 1fr) 4rem;
+    min-height: 3.15rem;
+    padding: .38rem .44rem;
+  }
+
+  .tv-recent-focus-row strong {
+    font-size: .76rem;
+  }
+
+  .tv-recent-focus-row span,
+  .tv-recent-focus-row time,
+  .tv-recent-focus-row small {
+    font-size: .62rem;
+  }
+
+  .tv-wall-focus header small {
+    display: none;
+  }
+
+  .tv-wall-focus .tv-recent-focus-row:nth-of-type(n+6) {
+    display: none;
+  }
+}
+
+@media (width <= 1100px) {
+  .tv-standby-wall {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    overflow: visible;
+  }
+
+  .tv-wall-chart,
+  .tv-wall-donut,
+  .tv-wall-progress,
+  .tv-wall-focus {
+    grid-column: auto;
+    grid-row: auto;
+    max-height: none;
+  }
+}
+
+.tv-wall-report {
+  grid-column: 1 / 3;
+  grid-row: 2;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.tv-wall-report-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, .85fr) minmax(18rem, .95fr);
+  gap: .75rem;
+  min-height: 0;
+}
+
+.tv-report-chart,
+.tv-report-status,
+.tv-report-progress {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: .5rem;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 7px;
+  background: rgb(255 255 255 / 4%);
+  padding: .65rem;
+}
+
+.tv-report-progress {
+  grid-template-columns: minmax(7rem, .45fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.tv-report-chart > span,
+.tv-report-status > span,
+.tv-report-progress > span {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  grid-column: 1 / -1;
+  color: #9cc8ff;
+  font-size: .7rem;
+  font-weight: 950;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.tv-report-progress .tv-wall-gauge {
+  inline-size: min(8.5rem, 100%);
+}
+
+.tv-report-progress .tv-wall-depots {
+  align-self: stretch;
+  align-content: center;
+}
+
+.tv-wall-gauge small {
+  z-index: 1;
+  grid-area: 1 / 1;
+  align-self: end;
+  margin-bottom: 26%;
+  color: var(--tv-muted);
+  font-size: .7rem;
+  font-weight: 900;
+}
+
+@media (height <= 820px) {
+  .tv-wall-report-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, .95fr);
+  }
+
+  .tv-report-progress {
+    display: none;
+  }
+
+  .tv-report-chart,
+  .tv-report-status {
+    padding: .5rem;
+  }
+}
+
+@media (width <= 1100px) {
+  .tv-wall-report {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .tv-wall-report-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tv-report-progress {
+    display: grid;
+  }
+}
