@@ -45,10 +45,12 @@ export async function GET() {
   url.searchParams.set("latitude", String(OFFICE.latitude));
   url.searchParams.set("longitude", String(OFFICE.longitude));
   url.searchParams.set("timezone", "Europe/Moscow");
-  url.searchParams.set("forecast_hours", "12");
+  url.searchParams.set("forecast_hours", "24");
+  url.searchParams.set("forecast_days", "2");
   url.searchParams.set("wind_speed_unit", "ms");
   url.searchParams.set("current", "temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_gusts_10m");
   url.searchParams.set("hourly", "precipitation_probability,precipitation,weather_code,temperature_2m");
+  url.searchParams.set("daily", "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max");
 
   try {
     const response = await fetch(url, { next: { revalidate: 600 } });
@@ -57,6 +59,7 @@ export async function GET() {
     const precipitationProbability = data.hourly?.precipitation_probability ?? [];
     const precipitation = data.hourly?.precipitation ?? [];
     const nextPrecipitationIndex = precipitationProbability.findIndex((value: number, index: number) => value >= 45 || Number(precipitation[index] ?? 0) > 0);
+    const tomorrowWeatherCode = Number(data.daily?.weather_code?.[1] ?? data.current?.weather_code ?? 0);
 
     return NextResponse.json(
       {
@@ -69,6 +72,17 @@ export async function GET() {
         windGusts: Math.round(Number(data.current?.wind_gusts_10m ?? 0)),
         weatherCode: Number(data.current?.weather_code ?? 0),
         summary: weatherLabels[Number(data.current?.weather_code ?? 0)] ?? "Погода",
+        hourlyForecast: buildHourlyForecast(data),
+        tomorrow: data.daily?.time?.[1]
+          ? {
+              date: data.daily.time[1],
+              temperatureMin: Math.round(Number(data.daily.temperature_2m_min?.[1] ?? 0)),
+              temperatureMax: Math.round(Number(data.daily.temperature_2m_max?.[1] ?? 0)),
+              precipitation: Number(data.daily.precipitation_sum?.[1] ?? 0),
+              probability: Number(data.daily.precipitation_probability_max?.[1] ?? 0),
+              summary: weatherLabels[tomorrowWeatherCode] ?? "Forecast",
+            }
+          : null,
         nextPrecipitation:
           nextPrecipitationIndex >= 0
             ? {
@@ -93,4 +107,23 @@ export async function GET() {
       summary: "Погода временно недоступна",
     });
   }
+}
+
+function buildHourlyForecast(data: any) {
+  const times = data.hourly?.time ?? [];
+  const now = Date.now();
+  const firstFutureIndex = times.findIndex((time: string) => new Date(time).getTime() >= now);
+  const start = firstFutureIndex >= 0 ? firstFutureIndex : 0;
+
+  return times.slice(start, start + 4).map((time: string, offset: number) => {
+    const index = start + offset;
+    const weatherCode = Number(data.hourly?.weather_code?.[index] ?? data.current?.weather_code ?? 0);
+    return {
+      time,
+      temperature: Math.round(Number(data.hourly?.temperature_2m?.[index] ?? 0)),
+      probability: Number(data.hourly?.precipitation_probability?.[index] ?? 0),
+      precipitation: Number(data.hourly?.precipitation?.[index] ?? 0),
+      summary: weatherLabels[weatherCode] ?? "Weather",
+    };
+  });
 }

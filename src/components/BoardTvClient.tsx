@@ -25,6 +25,13 @@ const officeWeatherLocation = {
   longitude: 30.2991,
 };
 
+const standbyTimeZones = [
+  { city: "Санкт-Петербург", label: "офис", timeZone: "Europe/Moscow" },
+  { city: "Омск", label: "+3 к МСК", timeZone: "Asia/Omsk" },
+  { city: "Челябинск", label: "+2 к МСК", timeZone: "Asia/Yekaterinburg" },
+  { city: "Тобольск", label: "+2 к МСК", timeZone: "Asia/Yekaterinburg" },
+];
+
 const weatherLabels: Record<number, string> = {
   0: "Ясно",
   1: "Преимущественно ясно",
@@ -550,6 +557,71 @@ function WeatherPanel({ weather }: { weather: Weather | null }) {
   );
 }
 
+function StandbyWeatherPanel({ weather }: { weather: Weather | null }) {
+  if (!weather || weather.unavailable) {
+    return (
+      <section className="tv-standby-weather-card" aria-label="Погода">
+        <header>
+          <span><CloudSun size={18} /> Погода</span>
+          <small>{weather?.updatedAt ? `обновлено ${hourOnly(weather.updatedAt)}` : "загрузка"}</small>
+        </header>
+        <div className="tv-standby-weather-empty">
+          <strong>{weather?.unavailable ? "Погода недоступна" : "Погода загружается"}</strong>
+          <span>Санкт-Петербург · Конногвардейский бульвар, 4</span>
+        </div>
+      </section>
+    );
+  }
+
+  const tomorrow = weather.tomorrow;
+  const hours = Array.isArray(weather.hourlyForecast) ? weather.hourlyForecast.slice(0, 4) : [];
+
+  return (
+    <section className="tv-standby-weather-card" aria-label="Погода в офисе">
+      <header>
+        <span><CloudSun size={18} /> Погода</span>
+        <small>обновлено {hourOnly(weather.updatedAt)}</small>
+      </header>
+      <div className="tv-standby-weather-now">
+        <CloudSun size={34} />
+        <div>
+          <strong>{signed(weather.temperature)}°C</strong>
+          <span>{weather.summary}</span>
+          <small>ощущается {signed(weather.apparentTemperature)}° · ветер {weather.windSpeed} м/с</small>
+        </div>
+      </div>
+      <div className="tv-standby-weather-facts">
+        <span>
+          <small>порывы</small>
+          <b>{weather.windGusts ?? weather.windSpeed} м/с</b>
+        </span>
+        <span>
+          <small>осадки</small>
+          <b>{weather.nextPrecipitation ? `${weather.nextPrecipitation.probability}% в ${hourOnly(weather.nextPrecipitation.time)}` : "не ждём"}</b>
+        </span>
+        <span>
+          <small>адрес</small>
+          <b>{weather.office?.name ?? "Санкт-Петербург"}</b>
+        </span>
+      </div>
+      <div className="tv-standby-weather-hours">
+        {hours.length ? hours.map((item: any) => (
+          <span key={item.time}>
+            <small>{hourOnly(item.time)}</small>
+            <b>{signed(item.temperature)}°</b>
+            <em>{item.probability}%</em>
+          </span>
+        )) : null}
+      </div>
+      <div className="tv-standby-weather-tomorrow">
+        <small>Завтра</small>
+        <strong>{tomorrow ? `${signed(tomorrow.temperatureMin)}...${signed(tomorrow.temperatureMax)}° · ${tomorrow.summary}` : "прогноз обновляется"}</strong>
+        <span>{tomorrow ? `осадки ${tomorrow.probability ?? 0}% · ${Number(tomorrow.precipitation ?? 0).toFixed(1)} мм` : "данные появятся после обновления"}</span>
+      </div>
+    </section>
+  );
+}
+
 function TvStandby({ now, weather, news, newsUnavailable, summary, tasks, activityLogs }: { now: Date; weather: Weather | null; news: TvNews | null; newsUnavailable: boolean; summary: ReturnType<typeof buildSummary>; tasks: Task[]; activityLogs: any[] }) {
   const activeTasks = tasks.filter((task) => !isCompletedColumn(task.column?.name ?? ""));
   const recentFocus = buildRecentActionFocus(tasks, activityLogs).slice(0, 6);
@@ -565,10 +637,19 @@ function TvStandby({ now, weather, news, newsUnavailable, summary, tasks, activi
         <span>Taskora TV</span>
         <strong>{timeOnly(now)}</strong>
         <small>{dateLong(now)}</small>
-        <div>
+        <div className="tv-wall-clock-stats">
           <span><b>{summary.active}</b>активно</span>
           <span><b>{summary.overdue}</b>просрочено</span>
           <span><b>{updatedToday}</b>действий сегодня</span>
+        </div>
+        <div className="tv-wall-timezones">
+          {standbyTimeZones.map((zone) => (
+            <span key={zone.city}>
+              <small>{zone.city}</small>
+              <b>{cityTime(now, zone.timeZone)}</b>
+              <em>{zone.label}</em>
+            </span>
+          ))}
         </div>
       </article>
 
@@ -579,7 +660,7 @@ function TvStandby({ now, weather, news, newsUnavailable, summary, tasks, activi
       </article>
 
       <article className="tv-wall-weather">
-        <WeatherPanel weather={weather} />
+        <StandbyWeatherPanel weather={weather} />
       </article>
 
       <article className="tv-wall-report tv-wall-panel">
@@ -1387,6 +1468,9 @@ function timeOnly(value: Date) {
   return new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(value);
 }
 
+function cityTime(value: Date, timeZone: string) {
+  return new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone }).format(value);
+}
 
 function hourOnly(value: string) {
   return new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
@@ -1422,10 +1506,12 @@ async function fetchOfficeWeatherDirect() {
   url.searchParams.set("latitude", String(officeWeatherLocation.latitude));
   url.searchParams.set("longitude", String(officeWeatherLocation.longitude));
   url.searchParams.set("timezone", "Europe/Moscow");
-  url.searchParams.set("forecast_hours", "12");
+  url.searchParams.set("forecast_hours", "24");
+  url.searchParams.set("forecast_days", "2");
   url.searchParams.set("wind_speed_unit", "ms");
   url.searchParams.set("current", "temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_gusts_10m");
   url.searchParams.set("hourly", "precipitation_probability,precipitation,weather_code,temperature_2m");
+  url.searchParams.set("daily", "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max");
 
   const response = await fetch(url);
   if (!response.ok) throw new Error("Direct weather request failed");
@@ -1433,6 +1519,7 @@ async function fetchOfficeWeatherDirect() {
   const precipitationProbability = data.hourly?.precipitation_probability ?? [];
   const precipitation = data.hourly?.precipitation ?? [];
   const nextPrecipitationIndex = precipitationProbability.findIndex((value: number, index: number) => value >= 45 || Number(precipitation[index] ?? 0) > 0);
+  const tomorrowWeatherCode = Number(data.daily?.weather_code?.[1] ?? data.current?.weather_code ?? 0);
 
   return {
     office: officeWeatherLocation,
@@ -1444,6 +1531,17 @@ async function fetchOfficeWeatherDirect() {
     windGusts: Math.round(Number(data.current?.wind_gusts_10m ?? 0)),
     weatherCode: Number(data.current?.weather_code ?? 0),
     summary: weatherLabels[Number(data.current?.weather_code ?? 0)] ?? "Погода",
+    hourlyForecast: buildWeatherHourlyForecast(data),
+    tomorrow: data.daily?.time?.[1]
+      ? {
+          date: data.daily.time[1],
+          temperatureMin: Math.round(Number(data.daily.temperature_2m_min?.[1] ?? 0)),
+          temperatureMax: Math.round(Number(data.daily.temperature_2m_max?.[1] ?? 0)),
+          precipitation: Number(data.daily.precipitation_sum?.[1] ?? 0),
+          probability: Number(data.daily.precipitation_probability_max?.[1] ?? 0),
+          summary: weatherLabels[tomorrowWeatherCode] ?? "Прогноз",
+        }
+      : null,
     nextPrecipitation:
       nextPrecipitationIndex >= 0
         ? {
@@ -1454,5 +1552,23 @@ async function fetchOfficeWeatherDirect() {
           }
         : null,
   };
+}
+
+function buildWeatherHourlyForecast(data: any) {
+  const times = data.hourly?.time ?? [];
+  const firstFutureIndex = times.findIndex((time: string) => new Date(time).getTime() >= Date.now());
+  const start = firstFutureIndex >= 0 ? firstFutureIndex : 0;
+
+  return times.slice(start, start + 4).map((time: string, offset: number) => {
+    const index = start + offset;
+    const weatherCode = Number(data.hourly?.weather_code?.[index] ?? data.current?.weather_code ?? 0);
+    return {
+      time,
+      temperature: Math.round(Number(data.hourly?.temperature_2m?.[index] ?? 0)),
+      probability: Number(data.hourly?.precipitation_probability?.[index] ?? 0),
+      precipitation: Number(data.hourly?.precipitation?.[index] ?? 0),
+      summary: weatherLabels[weatherCode] ?? "Погода",
+    };
+  });
 }
 
