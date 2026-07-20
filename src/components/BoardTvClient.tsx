@@ -113,7 +113,6 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
   const [now, setNow] = useState(new Date());
   const [joke, setJoke] = useState<TvJoke>({ text: officeJokes[0], sourceUrl: null, updatedAt: "fallback" });
   const [news, setNews] = useState<TvNews | null>(initialNews);
-  const [newsExpanded, setNewsExpanded] = useState(false);
   const [tvMode, setTvMode] = useState<TvMode>("standby");
   const [manualModeUntil, setManualModeUntil] = useState(0);
   const [newsUnavailable, setNewsUnavailable] = useState(false);
@@ -163,7 +162,7 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
     if (seenNewsIdRef.current === news.id) return;
 
     seenNewsIdRef.current = news.id;
-    showTemporaryMode("news", { expandNews: true });
+    showTemporaryMode("news");
   }, [news?.id]);
 
   useEffect(() => {
@@ -187,16 +186,6 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        setTvMode("news");
-        setNewsExpanded(true);
-        holdManualMode();
-      }
-      if (event.key === "ArrowUp") {
-        event.preventDefault();
-        setNewsExpanded(false);
-      }
       if (event.key === "ArrowRight") {
         event.preventDefault();
         setTvMode((current) => nextTvMode(current, 1));
@@ -216,7 +205,6 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (Date.now() < manualModeUntil) return;
-      setNewsExpanded(false);
       setTvMode((current) => nextTvMode(current, 1));
     }, AUTO_ROTATION_MS);
     return () => window.clearInterval(timer);
@@ -305,13 +293,11 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
     setManualModeUntil(Date.now() + MANUAL_HOLD_MS);
   }
 
-  function showTemporaryMode(mode: TvMode, options: { expandNews?: boolean } = {}) {
+  function showTemporaryMode(mode: TvMode) {
     clearFeatureReturnTimer();
     setTvMode(mode);
-    setNewsExpanded(Boolean(options.expandNews));
     setManualModeUntil(Date.now() + FEATURE_HOLD_MS);
     featureReturnTimerRef.current = window.setTimeout(() => {
-      setNewsExpanded(false);
       setTvMode("standby");
       setManualModeUntil(0);
       featureReturnTimerRef.current = null;
@@ -345,7 +331,6 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
   function showTaskSpotlight(spotlight: TvTaskSpotlight) {
     clearFeatureReturnTimer();
     clearTaskSpotlightTimer();
-    setNewsExpanded(false);
     setTvMode("tasks");
     setManualModeUntil(Date.now() + TASK_SPOTLIGHT_MS + 3000);
     setTaskSpotlight(spotlight);
@@ -412,7 +397,7 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
 
       <section className="tv-layout">
         {tvMode === "standby" ? <TvStandby now={now} weather={weather} news={cleanNews} newsUnavailable={newsUnavailable} joke={joke} summary={summary} tasks={tasks} /> : null}
-        {tvMode === "news" ? <TvNewsReader news={cleanNews} unavailable={newsUnavailable} expanded={newsExpanded} now={now} /> : null}
+        {tvMode === "news" ? <TvNewsReader news={cleanNews} unavailable={newsUnavailable} now={now} /> : null}
         {tvMode === "tasks" ? <section className="tv-board" aria-label="Канбан-доска для телевизора">
           {view?.board?.columns?.map((column: any) => (
             <article className={`tv-column${isCompletedColumn(column.name) ? " tv-column-done" : ""}`} key={column.id}>
@@ -437,7 +422,7 @@ export function BoardTvClient({ initialView, initialNews = null }: { initialView
       <footer className="tv-footer">
         <span>Обновлено {timeOnly(lastUpdatedAt)}</span>
         <span>{view?.board?.name ?? "Taskora"}</span>
-        <span>← → режимы · ↓ новость полностью · ↑ свернуть</span>
+        <span>← → режимы</span>
       </footer>
       <TaskSoundNotifier />
       <GoidaReminder />
@@ -516,9 +501,9 @@ function TvStandby({ now, weather, news, newsUnavailable, joke, summary, tasks }
   );
 }
 
-function TvNewsReader({ news, unavailable, expanded, now }: { news: TvNews | null; unavailable: boolean; expanded: boolean; now: Date }) {
+function TvNewsReader({ news, unavailable, now }: { news: TvNews | null; unavailable: boolean; now: Date }) {
   return (
-    <section className={`tv-news-reader${expanded ? " is-expanded" : ""}`} aria-label="Новости">
+    <section className="tv-news-reader" aria-label="Новости">
       <article className="tv-news-reader-card">
         <span className="tv-reader-kicker"><Newspaper size={18} /> Дзен Новости</span>
         {news ? (

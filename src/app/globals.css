@@ -9349,3 +9349,800 @@
 .tv-column-done{position:relative;border-color:#b7dfca;background:linear-gradient(180deg,#f3fbf7,#edf8f2)}.tv-column-done::after{content:"ЗАКРЫТО";position:absolute;inset-block-start:.72rem;inset-inline-end:3.1rem;color:#12805c;font-size:.62rem;font-weight:950;letter-spacing:.12em}.tv-column-done>header{border-block-end-color:#c6e8d5;color:#0f6b4b}.tv-column-done>header span{display:inline-flex;align-items:center;gap:.42rem}.tv-column-done>header span::before{content:"✓";display:grid;width:1.25rem;height:1.25rem;place-items:center;border-radius:999px;background:#16a34a;color:#fff;font-size:.78rem;font-weight:950}.tv-column-done>header b{background:#dcfce7;color:#166534}.tv-task-done{border-color:#d5eadc;background:linear-gradient(180deg,#ffffff,#f7fbf8);color:#667085}.tv-task-done::before{background:#16a34a}.tv-task-done::after{content:"";position:absolute;inset-block-start:.72rem;inset-inline-end:.72rem;width:1rem;height:1rem;border-radius:999px;background:#16a34a;box-shadow:inset 0 0 0 3px #fff}.tv-task-done h2{color:#344054;text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:#9acdb0}.tv-task-done .tv-task-top b{border-radius:999px;background:#dcfce7;color:#166534;padding:.16rem .42rem}.tv-task-done .tv-task-meta time,.tv-task-done .tv-task-bottom small{background:#ecfdf3;color:#16724f}.tv-task-done .tv-task-meta span,.tv-task-done .tv-task-bottom span{color:#667085}
 .tv-page{position:relative;isolation:isolate;background:#edf3f8}.tv-page::before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(rgb(15 23 42 / 4%) 1px,transparent 1px) 0 0/3.5rem 3.5rem,linear-gradient(90deg,rgb(15 23 42 / 4%) 1px,transparent 1px) 0 0/3.5rem 3.5rem,radial-gradient(120% 90% at 50% 0%,#ffffff 0%,#f3f7fb 48%,#e6eef7 100%)}.tv-page::after{content:"";position:absolute;z-index:-1;inset:0;border:1px solid rgb(255 255 255 / 70%);pointer-events:none}.tv-title-block,.tv-clock-card,.tv-weather-card,.tv-joke-card,.tv-column,.tv-standby-clock,.tv-standby-side,.tv-standby-news,.tv-standby-footer-card,.tv-news-reader-card,.tv-joke-stage-card,.tv-joke-stage-side>div,.tv-dashboard-hero{background:rgb(255 255 255 / 88%);box-shadow:0 18px 44px rgb(16 24 40 / 8%),inset 0 1px 0 rgb(255 255 255 / 75%)}.tv-mode-bar{grid-template-columns:minmax(13rem,.32fr) minmax(0,1fr) auto;min-height:3.55rem;border-color:rgb(15 23 42 / 78%);background:linear-gradient(180deg,rgb(15 23 42 / 94%),rgb(30 41 59 / 92%));box-shadow:0 18px 36px rgb(15 23 42 / 18%);color:#e5edf7;padding:.45rem .62rem}.tv-mode-current{display:grid;grid-template-columns:1fr;gap:.12rem;border-right:1px solid rgb(255 255 255 / 14%);padding-right:.8rem}.tv-mode-current span{color:#93a4ba;font-size:.66rem;letter-spacing:.12em}.tv-mode-current strong{overflow:hidden;color:#f8fafc;font-size:.96rem;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.tv-mode-switcher{justify-content:flex-start;gap:.42rem}.tv-mode-switcher button{grid-template-columns:auto auto minmax(0,auto);min-height:2.45rem;border-color:rgb(255 255 255 / 8%);border-radius:8px;background:rgb(255 255 255 / 4%);color:#cbd5e1;padding:.38rem .58rem}.tv-mode-switcher button small{order:0;color:#8ea0b8;font-size:.66rem}.tv-mode-switcher button svg{order:1;color:#9fb0c5}.tv-mode-switcher button span{order:2;white-space:nowrap}.tv-mode-switcher button.is-active{border-color:rgb(147 197 253 / 55%);background:linear-gradient(180deg,rgb(37 99 235 / 34%),rgb(29 78 216 / 22%));color:#fff;box-shadow:0 10px 24px rgb(37 99 235 / 18%),inset 0 1px 0 rgb(255 255 255 / 14%);transform:none}.tv-mode-switcher button.is-active svg,.tv-mode-switcher button.is-active small{color:#bfdbfe}.tv-mode-switcher button.is-active::after{inset-inline:.58rem;inset-block-end:-.48rem;background:#93c5fd}.tv-mode-meter{border-left:1px solid rgb(255 255 255 / 14%);padding-left:.7rem}.tv-mode-meter span{background:rgb(148 163 184 / 45%)}.tv-mode-meter span.is-active{background:#93c5fd}.tv-standby-clock{background:linear-gradient(135deg,rgb(255 255 255 / 92%),rgb(248 250 252 / 78%))}.tv-standby-clock strong{font-weight:780}.tv-news-reader-card{background:linear-gradient(135deg,rgb(255 255 255 / 94%),rgb(246 249 253 / 88%))}.tv-news-reader-card h2,.tv-joke-stage-card strong{text-wrap:balance}.tv-focus-dashboard .tv-dashboard-hero{background:linear-gradient(135deg,rgb(15 23 42 / 94%),rgb(30 41 59 / 92%));color:#f8fafc}.tv-focus-dashboard .tv-dashboard-hero span{color:#cbd5e1}.tv-focus-dashboard .tv-dashboard-hero svg{color:#93c5fd}.tv-footer{border-top:1px solid rgb(15 23 42 / 8%);padding-top:.15rem}
 .tv-task-spotlight{position:fixed;z-index:50;inset:0;display:grid;place-items:center;padding:clamp(1rem,3vw,3rem);background:radial-gradient(100% 80% at 50% 18%,rgb(37 99 235 / 24%),transparent 58%),rgb(15 23 42 / 72%);backdrop-filter:blur(8px);animation:tvSpotlightBackdrop 9000ms ease both;pointer-events:none}.tv-task-spotlight-card{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:1rem;width:min(74rem,94vw);max-height:min(42rem,86dvh);overflow:hidden;border:1px solid rgb(226 232 240 / 28%);border-radius:12px;background:linear-gradient(135deg,rgb(248 250 252 / 97%),rgb(238 244 252 / 94%));box-shadow:0 32px 90px rgb(2 6 23 / 42%),inset 0 1px 0 rgb(255 255 255 / 80%);padding:clamp(1rem,2.6vw,2rem);animation:tvSpotlightCard 9000ms cubic-bezier(.2,.8,.2,1) both}.tv-task-spotlight-status{display:flex;align-items:center;justify-content:space-between;gap:1rem}.tv-task-spotlight-status span{border:1px solid #bfdbfe;border-radius:999px;background:#eff6ff;color:#1d4ed8;padding:.36rem .72rem;font-size:.76rem;font-weight:950;text-transform:uppercase;letter-spacing:.08em}.tv-task-spotlight-status strong{color:#0f172a;font-size:clamp(1.6rem,3vw,2.8rem);font-variant-numeric:tabular-nums;line-height:1}.tv-task-spotlight-main{display:grid;align-content:center;gap:.65rem;min-height:0}.tv-task-spotlight-kicker{color:#2563eb;font-size:.9rem;font-weight:950;text-transform:uppercase}.tv-task-spotlight-main h2{display:-webkit-box;overflow:hidden;color:#0f172a;font-size:clamp(2rem,4.4vw,4.8rem);line-height:1.03;letter-spacing:0;text-wrap:balance;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3}.tv-task-spotlight-main p{display:-webkit-box;overflow:hidden;max-width:58rem;color:#475467;font-size:clamp(1rem,1.4vw,1.25rem);line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3}.tv-task-spotlight-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.55rem;margin:0}.tv-task-spotlight-facts div{display:grid;align-content:start;gap:.18rem;min-width:0;border:1px solid #d9e2ef;border-radius:8px;background:rgb(255 255 255 / 72%);padding:.65rem}.tv-task-spotlight-facts dt{color:#667085;font-size:.66rem;font-weight:950;text-transform:uppercase}.tv-task-spotlight-facts dd{overflow:hidden;margin:0;color:#101828;font-size:.86rem;font-weight:850;text-overflow:ellipsis;white-space:nowrap}.tv-task-spotlight-changes{display:flex;align-items:center;gap:.45rem;min-width:0;overflow:hidden}.tv-task-spotlight-changes span{border:1px solid #cbd5e1;border-radius:999px;background:#fff;color:#344054;padding:.32rem .62rem;font-size:.76rem;font-weight:900;white-space:nowrap}.tv-task-spotlight-created .tv-task-spotlight-status span{border-color:#bbf7d0;background:#ecfdf3;color:#15803d}.tv-task-spotlight-updated .tv-task-spotlight-status span{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}@keyframes tvSpotlightBackdrop{0%{opacity:0}8%,84%{opacity:1}100%{opacity:0}}@keyframes tvSpotlightCard{0%{opacity:0;transform:translateY(2rem) scale(.9);filter:blur(3px)}10%,78%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}100%{opacity:0;transform:translateY(1.2rem) scale(.82);filter:blur(2px)}}@media (max-width:900px){.tv-task-spotlight-card{width:96vw;max-height:88dvh}.tv-task-spotlight-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.tv-task-spotlight-changes{flex-wrap:wrap}.tv-task-spotlight-main h2{font-size:2rem}}
+
+/* Taskora TV control-room redesign */
+.tv-page {
+  --tv-bg: #151719;
+  --tv-panel: #f7f8f5;
+  --tv-panel-soft: #ecefeb;
+  --tv-panel-deep: #252926;
+  --tv-ink: #101412;
+  --tv-muted: #67716a;
+  --tv-line: rgb(16 20 18 / 14%);
+  --tv-command: #202422;
+  --tv-command-2: #171b19;
+  --tv-blue: #2f6fbd;
+  --tv-green: #16845f;
+  --tv-amber: #b56b17;
+  --tv-red: #b3263f;
+  block-size: 100dvh;
+  min-block-size: 100dvh;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: .7rem;
+  overflow: hidden;
+  background:
+    linear-gradient(rgb(255 255 255 / 4%) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(90deg, rgb(255 255 255 / 4%) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(180deg, #2b2f2c 0%, #151719 58%, #111311 100%);
+  color: var(--tv-ink);
+  padding: .75rem;
+}
+
+.tv-page::before,
+.tv-page::after {
+  content: none;
+}
+
+.tv-mode-standby,
+.tv-mode-jokes {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.tv-mode-news {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+.tv-title-block,
+.tv-clock-card,
+.tv-weather-card,
+.tv-joke-card,
+.tv-column,
+.tv-standby-clock,
+.tv-standby-side,
+.tv-standby-news,
+.tv-standby-footer-card,
+.tv-news-reader-card,
+.tv-joke-stage-card,
+.tv-joke-stage-side > div,
+.tv-dashboard-hero,
+.tv-task-spotlight-card {
+  border: 1px solid rgb(255 255 255 / 52%);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 96%), rgb(239 242 237 / 94%));
+  box-shadow: 0 18px 42px rgb(0 0 0 / 22%), inset 0 1px 0 rgb(255 255 255 / 82%);
+}
+
+.tv-mode-bar {
+  display: grid;
+  grid-template-columns: minmax(12rem, .32fr) minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 3.8rem;
+  gap: .75rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--tv-command), var(--tv-command-2));
+  box-shadow: 0 16px 34px rgb(0 0 0 / 28%), inset 0 1px 0 rgb(255 255 255 / 8%);
+  color: #f1f5f0;
+  padding: .48rem .62rem;
+}
+
+.tv-mode-current {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .1rem;
+  min-width: 0;
+  border-right: 1px solid rgb(255 255 255 / 12%);
+  padding-right: .85rem;
+}
+
+.tv-mode-current span {
+  overflow: hidden;
+  color: #a6b0aa;
+  font-size: .66rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tv-mode-current strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tv-mode-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .42rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tv-mode-switcher button {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, auto);
+  align-items: center;
+  gap: .38rem;
+  min-height: 2.55rem;
+  min-width: 0;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  color: #c9d2cb;
+  padding: .4rem .62rem;
+  font-size: .78rem;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.tv-mode-switcher button small,
+.tv-mode-switcher button svg {
+  color: #93a09a;
+}
+
+.tv-mode-switcher button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tv-mode-switcher button.is-active {
+  border-color: rgb(144 183 148 / 55%);
+  background: linear-gradient(180deg, rgb(46 110 74 / 52%), rgb(28 80 56 / 44%));
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%);
+  transform: none;
+}
+
+.tv-mode-switcher button.is-active::after {
+  content: "";
+  position: absolute;
+  inset-inline: .6rem;
+  inset-block-end: -.5rem;
+  height: 2px;
+  border-radius: 999px;
+  background: #8fd0a4;
+}
+
+.tv-mode-meter {
+  display: flex;
+  align-items: center;
+  gap: .28rem;
+  border-left: 1px solid rgb(255 255 255 / 12%);
+  padding-left: .75rem;
+}
+
+.tv-mode-meter span {
+  width: .42rem;
+  height: .42rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 22%);
+}
+
+.tv-mode-meter span.is-active {
+  width: 1.35rem;
+  background: #8fd0a4;
+}
+
+.tv-hero {
+  display: grid;
+  grid-template-columns: minmax(20rem, 1.08fr) minmax(11rem, .38fr) minmax(22rem, .82fr) minmax(18rem, .68fr);
+  gap: .7rem;
+}
+
+.tv-title-block {
+  min-block-size: 5.35rem;
+  align-content: center;
+  gap: .35rem;
+  padding: .82rem .95rem;
+}
+
+.tv-title-block h1 {
+  color: var(--tv-ink);
+  font-size: 1.5rem;
+  font-weight: 860;
+  letter-spacing: 0;
+  line-height: 1.05;
+}
+
+.tv-live-pill {
+  border: 1px solid rgb(22 132 95 / 18%);
+  background: #e6f4ed;
+  color: var(--tv-green);
+  animation: none;
+}
+
+.tv-live-stale {
+  border-color: rgb(181 107 23 / 22%);
+  background: #fff0dc;
+  color: var(--tv-amber);
+}
+
+.tv-compact-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .34rem;
+  min-width: 0;
+}
+
+.tv-compact-stats span {
+  border: 1px solid rgb(47 111 189 / 14%);
+  border-radius: 6px;
+  background: #e9f0f8;
+  color: #245b9f;
+  padding: .16rem .42rem;
+  font-size: .7rem;
+  font-weight: 850;
+}
+
+.tv-clock-card,
+.tv-weather-card,
+.tv-joke-card {
+  min-block-size: 5.35rem;
+}
+
+.tv-clock-card strong {
+  font-size: 1.95rem;
+  letter-spacing: 0;
+}
+
+.tv-weather-card {
+  gap: .7rem;
+  padding: .78rem;
+}
+
+.tv-weather-card svg {
+  color: var(--tv-blue);
+}
+
+.tv-weather-card strong {
+  color: var(--tv-ink);
+  font-size: 1.02rem;
+}
+
+.tv-weather-card span,
+.tv-weather-card small,
+.tv-clock-card span,
+.tv-joke-card span {
+  color: var(--tv-muted);
+}
+
+.tv-joke-card strong {
+  color: var(--tv-ink);
+  font-size: .95rem;
+  line-height: 1.22;
+}
+
+.tv-layout {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tv-board {
+  display: grid;
+  grid-auto-columns: minmax(16.5rem, 1fr);
+  grid-auto-flow: column;
+  gap: .68rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tv-column {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f6f8f4, #edf1ec);
+}
+
+.tv-column > header {
+  min-height: 3.15rem;
+  border-bottom: 1px solid var(--tv-line);
+  color: #303832;
+  padding: .76rem .85rem;
+}
+
+.tv-column > header span {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tv-column > header b {
+  min-width: 2rem;
+  height: 1.7rem;
+  background: #dde6df;
+  color: #3f4b43;
+}
+
+.tv-column-done {
+  border-color: rgb(22 132 95 / 28%);
+  background: linear-gradient(180deg, #f0f7f2, #e6f0e8);
+}
+
+.tv-column-done::after {
+  content: "ЗАКРЫТО";
+  inset-block-start: .9rem;
+  inset-inline-end: 3.1rem;
+  color: var(--tv-green);
+}
+
+.tv-column-done > header span::before {
+  content: "OK";
+  width: 1.45rem;
+  height: 1.25rem;
+  border-radius: 6px;
+  background: var(--tv-green);
+  color: #ffffff;
+  font-size: .62rem;
+}
+
+.tv-task-list {
+  gap: .56rem;
+  padding: .62rem;
+}
+
+.tv-task {
+  min-height: 7.35rem;
+  gap: .38rem;
+  border-color: rgb(16 20 18 / 10%);
+  background: #ffffff;
+  padding: .68rem .72rem .68rem .92rem;
+  box-shadow: 0 8px 18px rgb(16 20 18 / 7%);
+  animation: none;
+}
+
+.tv-task::before {
+  width: .24rem;
+}
+
+.tv-task h2 {
+  color: var(--tv-ink);
+  font-size: .95rem;
+  letter-spacing: 0;
+  line-height: 1.22;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.tv-task-top span,
+.tv-task-meta span,
+.tv-task-bottom span {
+  color: var(--tv-muted);
+}
+
+.tv-task-top b,
+.tv-task-meta time,
+.tv-task-bottom small {
+  border-radius: 6px;
+  background: #edf3f8;
+  color: #245b9f;
+}
+
+.tv-task-critical::before { background: var(--tv-red); }
+.tv-task-high::before { background: #d0492f; }
+.tv-task-medium::before { background: var(--tv-amber); }
+.tv-task-planned::before { background: #6b63b7; }
+.tv-task-low::before { background: var(--tv-green); }
+
+.tv-task-done {
+  border-color: rgb(22 132 95 / 16%);
+  background: #f8fbf8;
+}
+
+.tv-task-done h2 {
+  color: #526058;
+  text-decoration-color: rgb(22 132 95 / 42%);
+}
+
+.tv-more-card,
+.tv-empty-column {
+  min-height: 4rem;
+  border-color: rgb(16 20 18 / 16%);
+  color: var(--tv-muted);
+  background: rgb(255 255 255 / 48%);
+}
+
+.tv-standby {
+  display: grid;
+  grid-template-columns: minmax(0, 1.14fr) minmax(20rem, .56fr);
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: .7rem;
+  min-height: 0;
+}
+
+.tv-standby-clock {
+  grid-row: 1 / 3;
+  align-content: center;
+  padding: 3rem;
+  background: linear-gradient(180deg, #f7f8f5, #e8ece6);
+}
+
+.tv-standby-clock span {
+  color: var(--tv-muted);
+  font-size: 1.1rem;
+  letter-spacing: .06em;
+}
+
+.tv-standby-clock strong {
+  color: #111512;
+  font-size: 8rem;
+  font-weight: 780;
+  letter-spacing: 0;
+  line-height: .94;
+}
+
+.tv-standby-side {
+  gap: .62rem;
+  padding: .68rem;
+}
+
+.tv-standby-side .tv-weather-card {
+  box-shadow: none;
+}
+
+.tv-standby-stats {
+  gap: .48rem;
+}
+
+.tv-standby-stats span {
+  border: 1px solid var(--tv-line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--tv-muted);
+}
+
+.tv-standby-stats b {
+  color: var(--tv-ink);
+}
+
+.tv-standby-news,
+.tv-standby-footer-card {
+  gap: .42rem;
+  padding: 1rem;
+}
+
+.tv-standby-news > span,
+.tv-standby-footer-card > span,
+.tv-reader-kicker,
+.tv-joke-stage-card > span {
+  color: #245b9f;
+  font-size: .74rem;
+  letter-spacing: .06em;
+}
+
+.tv-standby-news strong,
+.tv-standby-footer-card strong {
+  color: var(--tv-ink);
+}
+
+.tv-standby-news p,
+.tv-standby-footer-card small {
+  color: var(--tv-muted);
+}
+
+.tv-news-reader {
+  display: grid;
+  min-height: 0;
+}
+
+.tv-news-reader-card {
+  align-content: center;
+  gap: 1rem;
+  padding: 3rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f8faf6, #edf1ec);
+}
+
+.tv-news-reader-card h2 {
+  display: -webkit-box;
+  max-width: 70rem;
+  overflow: hidden;
+  color: var(--tv-ink);
+  font-size: 3.4rem;
+  letter-spacing: 0;
+  line-height: 1.05;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.tv-news-reader-card p {
+  display: -webkit-box;
+  max-width: 64rem;
+  overflow: hidden;
+  color: #39443d;
+  font-size: 1.3rem;
+  line-height: 1.42;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.tv-reader-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .6rem;
+  color: var(--tv-muted);
+}
+
+.tv-reader-meta a {
+  border: 1px solid rgb(47 111 189 / 18%);
+  border-radius: 6px;
+  background: #e9f0f8;
+  color: #245b9f;
+}
+
+.tv-joke-stage {
+  gap: .7rem;
+}
+
+.tv-joke-stage-card {
+  padding: 3rem;
+}
+
+.tv-joke-stage-card strong {
+  max-width: 64rem;
+  color: var(--tv-ink);
+  font-size: 3.2rem;
+  letter-spacing: 0;
+  line-height: 1.14;
+}
+
+.tv-focus-dashboard {
+  gap: .7rem;
+}
+
+.tv-focus-dashboard .tv-dashboard-hero {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-height: 5rem;
+  background: linear-gradient(180deg, #202422, #171b19);
+  color: #ffffff;
+}
+
+.tv-focus-dashboard .tv-dashboard-hero span {
+  color: #c5d0c8;
+}
+
+.tv-focus-dashboard .tv-dashboard-hero svg {
+  color: #8fd0a4;
+}
+
+.tv-focus-list-large {
+  gap: .68rem;
+}
+
+.tv-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  min-height: 1.4rem;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  color: #a6b0aa;
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+  padding-top: .18rem;
+}
+
+.tv-footer span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tv-footer span:last-child {
+  justify-self: end;
+}
+
+.tv-exit {
+  opacity: .28;
+  color: #ffffff;
+}
+
+.tv-exit:hover,
+.tv-exit:focus-visible {
+  opacity: 1;
+}
+
+.tv-task-spotlight {
+  background: rgb(17 19 17 / 78%);
+}
+
+.tv-task-spotlight-card {
+  border-color: rgb(255 255 255 / 48%);
+  background: linear-gradient(180deg, #f8faf6, #edf1ec);
+}
+
+.tv-task-spotlight-main h2,
+.tv-task-spotlight-status strong {
+  color: var(--tv-ink);
+}
+
+@media (height <= 820px) {
+  .tv-page {
+    gap: .56rem;
+    padding: .56rem;
+  }
+
+  .tv-mode-bar {
+    min-height: 3.25rem;
+  }
+
+  .tv-hero {
+    gap: .56rem;
+  }
+
+  .tv-title-block,
+  .tv-clock-card,
+  .tv-weather-card,
+  .tv-joke-card {
+    min-block-size: 4.75rem;
+  }
+
+  .tv-task {
+    min-height: 6.55rem;
+  }
+
+  .tv-standby-clock {
+    padding: 2rem;
+  }
+
+  .tv-standby-clock strong {
+    font-size: 6.6rem;
+  }
+
+  .tv-news-reader-card,
+  .tv-joke-stage-card {
+    padding: 2.2rem;
+  }
+
+  .tv-news-reader-card h2 {
+    font-size: 2.8rem;
+  }
+
+  .tv-joke-stage-card strong {
+    font-size: 2.55rem;
+  }
+}
+
+@media (width <= 1100px) {
+  .tv-mode-bar {
+    grid-template-columns: minmax(10rem, auto) minmax(0, 1fr);
+  }
+
+  .tv-mode-meter {
+    display: none;
+  }
+
+  .tv-mode-switcher button {
+    grid-template-columns: auto auto;
+  }
+
+  .tv-mode-switcher button span {
+    display: none;
+  }
+
+  .tv-hero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tv-board {
+    grid-auto-columns: minmax(15rem, 1fr);
+    overflow-x: auto;
+  }
+
+  .tv-standby,
+  .tv-joke-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .tv-standby-clock {
+    grid-row: auto;
+  }
+
+  .tv-focus-list-large {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width <= 720px) {
+  .tv-page {
+    block-size: auto;
+    min-height: 100dvh;
+    overflow: auto;
+  }
+
+  .tv-mode-standby,
+  .tv-mode-jokes,
+  .tv-page {
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .tv-mode-standby,
+  .tv-mode-jokes {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .tv-mode-news {
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .tv-mode-current {
+    border-right: 0;
+    padding-right: 0;
+  }
+
+  .tv-mode-bar {
+    grid-template-columns: 1fr;
+    gap: .55rem;
+  }
+
+  .tv-mode-switcher {
+    overflow-x: auto;
+    padding-bottom: .1rem;
+  }
+
+  .tv-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .tv-board {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .tv-layout,
+  .tv-column {
+    overflow: visible;
+  }
+
+  .tv-task-list {
+    overflow: visible;
+  }
+
+  .tv-standby-clock strong {
+    font-size: 4.6rem;
+  }
+
+  .tv-news-reader-card h2 {
+    font-size: 2rem;
+  }
+
+  .tv-news-reader-card p {
+    font-size: 1rem;
+  }
+
+  .tv-joke-stage-card strong {
+    font-size: 2rem;
+  }
+
+  .tv-focus-list-large {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .tv-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .tv-footer span,
+  .tv-footer span:last-child {
+    justify-self: start;
+  }
+}
