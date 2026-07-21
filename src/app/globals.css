@@ -12432,10 +12432,11 @@
   gap: .55rem;
   min-width: 0;
   min-height: 0;
-  border: 1px solid rgb(255 255 255 / 52%);
+  border: 1px solid var(--tv-line);
   border-radius: 8px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 88%), rgb(239 242 237 / 86%));
-  box-shadow: 0 14px 30px rgb(0 0 0 / 16%), inset 0 1px 0 rgb(255 255 255 / 70%);
+  background: linear-gradient(180deg, rgb(31 40 47 / 96%), rgb(17 23 28 / 96%));
+  box-shadow: 0 16px 38px rgb(0 0 0 / 34%), inset 0 1px 0 rgb(255 255 255 / 7%);
+  color: var(--tv-ink);
   padding: .72rem;
   overflow: hidden;
 }
@@ -12444,7 +12445,7 @@
   display: flex;
   align-items: center;
   gap: .38rem;
-  color: #245b9f;
+  color: #79b3ff;
   font-size: .72rem;
   font-weight: 950;
   letter-spacing: .06em;
@@ -12462,9 +12463,9 @@
 .tv-broadcast-history p {
   min-width: 0;
   min-height: 0;
-  border: 1px solid rgb(16 20 18 / 9%);
+  border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 7px;
-  background: rgb(255 255 255 / 58%);
+  background: rgb(255 255 255 / 5%);
   color: var(--tv-muted);
   padding: .62rem .7rem;
 }
@@ -12480,7 +12481,7 @@
 }
 
 .tv-broadcast-history time {
-  color: #245b9f;
+  color: #79b3ff;
   font-size: .72rem;
   font-weight: 950;
   font-variant-numeric: tabular-nums;
@@ -12489,7 +12490,7 @@
 .tv-broadcast-history strong {
   display: -webkit-box;
   overflow: hidden;
-  color: var(--tv-ink);
+  color: #f7fbf8;
   font-size: .96rem;
   line-height: 1.18;
   -webkit-box-orient: vertical;
@@ -12500,6 +12501,7 @@
 .tv-broadcast-history span {
   display: -webkit-box;
   overflow: hidden;
+  color: var(--tv-muted);
   font-size: .78rem;
   font-weight: 760;
   line-height: 1.28;
